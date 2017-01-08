@@ -9,10 +9,12 @@ setup(
     url='https://github.com/MikhailMS/Final_Project'
     install_requires=[
         'Theano',
+        'theano-lstm'
         'numpy >= 1.7.1',
         'scipy >= 0.11',
         'sphinx >= 0.5.1',
         'pretty_midi',
+        'python-midi',
         'nltk',
         'textblob',
         'textstat'
