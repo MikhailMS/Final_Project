@@ -3,7 +3,7 @@
 List of functionality that would be added later in the priority order:
 - [ ] Music input
 - [ ] Music analysis
-- [ ] Text analysis
+- [x] Text analysis
 - [ ] Building neural network
 - [ ] Music output
 - [ ] Text mapping
@@ -11,7 +11,7 @@ List of functionality that would be added later in the priority order:
 ## Installation procedure:
   1. Clone the repo
   2. Run `pip install -r requirements.txt`
-  3. Create folder 'midi' with MIDI files
+  3. Create folder 'music' with MIDI files and 'output' folder to store generated midi files and neural network models
   4. Place that folder in root directory of the application
   5. Run 'main.py' file giving a path to the text, that should be analysed
 
