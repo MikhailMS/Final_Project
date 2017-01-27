@@ -1,8 +1,7 @@
 # Import packages
-import ebooklib
+import time, re, collections, ebooklib, nltk
 from ebooklib import epub
 from bs4 import BeautifulSoup
-import time
 from os import listdir
 from os.path import isfile, join
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
@@ -59,9 +58,9 @@ def sentiment_analysis(text):
     """'text' variable: representation of the text to be analysed.
     Returns a sentiment score for given text piece.
     To access values, use following keys:
-    'neg' - negative score
-    'pos' - positive score
-    'neu' - neural score
+        'neg' - negative score
+        'pos' - positive score
+        'neu' - neural score
     """
     sentences = []
     scores = []
@@ -79,6 +78,144 @@ def sentiment_analysis(text):
     else:
         return total_score['pos']/len(scores)
 
+def lexical_density_and_readability_analysis(text, allow_digits=False):
+    """'text' variable: representation of the text to be analysed.
+    Returns a pair of values:
+        lexical density score
+        readability score
+    """
+    print "[+] Tokenizing text..."
+    tokenizer = nltk.tokenize.RegexpTokenizer(r'\w+|[^\w\s]+')
+    tokens = tokenizer.tokenize(text)
+
+    print "[+] Tagging tokens..."
+    tagger = nltk.UnigramTagger(nltk.corpus.brown.tagged_sents())
+    tagged_tokens = tagger.tag(tokens)
+
+    print "[+] Tallying tags..."
+    lexical_counter = collections.Counter()
+    personal_pronoun_counter = collections.Counter()
+    adjective_counter = collections.Counter()
+    adverb_counter = collections.Counter()
+    noun_counter = collections.Counter()
+    verb_counter = collections.Counter()
+
+    for token in tagged_tokens:
+
+        if token[1] == None:
+            continue
+
+        # Adjectives
+        elif 'JJ' in token[1]:
+            lexical_counter[token[0]] += 1
+            adjective_counter[token[0]] += 1
+
+        elif 'JJR' in token[1]:
+            lexical_counter[token[0]] += 1
+            adjective_counter[token[0]] += 1
+
+        elif 'JJS' in token[1]:
+            lexical_counter[token[0]] += 1
+            adjective_counter[token[0]] += 1
+
+        # Nouns
+        elif 'NN' in token[1]:
+            lexical_counter[token[0]] += 1
+            noun_counter[token[0]] += 1
+
+        elif 'NNP' in token[1]:
+            lexical_counter[token[0]] += 1
+            noun_counter[token[0]] += 1
+
+        elif 'NNPS' in token[1]:
+            lexical_counter[token[0]] += 1
+            noun_counter[token[0]] += 1
+
+        elif 'NNS' in token[1]:
+            lexical_counter[token[0]] += 1
+            noun_counter[token[0]] += 1
+
+        # Adverbs
+        elif 'RB' in token[1]:
+            lexical_counter[token[0]] += 1
+            adverb_counter[token[0]] += 1
+
+        elif 'RBR' in token[1]:
+            lexical_counter[token[0]] += 1
+            adverb_counter[token[0]] += 1
+
+        elif 'RBS' in token[1]:
+            lexical_counter[token[0]] += 1
+            adverb_counter[token[0]] += 1
+
+        # Verbs
+        elif 'VB' in token[1]:
+            lexical_counter[token[0]] += 1
+            verb_counter[token[0]] += 1
+
+        elif 'VBD' in token[1]:
+            lexical_counter[token[0]] += 1
+            verb_counter[token[0]] += 1
+
+        elif 'VBG' in token[1]:
+            lexical_counter[token[0]] += 1
+            verb_counter[token[0]] += 1
+
+        elif 'VBN' in token[1]:
+            lexical_counter[token[0]] += 1
+            verb_counter[token[0]] += 1
+
+        elif 'VBP' in token[1]:
+            lexical_counter[token[0]] += 1
+            verb_counter[token[0]] += 1
+
+        elif 'VBZ' in token[1]:
+            lexical_counter[token[0]] += 1
+            verb_counter[token[0]] += 1
+
+        # Personal pronouns
+        elif 'PPS' in token[1]:
+            lexical_counter[token[0]] += 1
+            personal_pronoun_counter[token[0]] += 1
+
+    print "[+] Counting sentences..."
+    total_sentences = len(nltk.sent_tokenize(text.decode('utf-8')))
+
+    print "[+] Split text into words..."
+    if allow_digits:
+        words = re.findall(r"['\-\w]+", text)
+    else:
+        words = re.findall(r"['\-A-Za-z]+", text)
+
+    total_words = 0.0
+    total_chars = 0
+    for word in words:
+
+        word = word.strip(r"&^%$#@!")
+
+        # Allow hyphenated words, but not hyphens as words on their own.
+        if word == '-':
+            continue
+
+        # Record lengths of every word
+        length = len(word)
+
+        # Record total number of words and chars
+        total_words += 1
+        total_chars += length
+
+    # Calculate the lexical density of the text.
+    #total_unique_words = len(counters[0])
+    total_meaningful_words = sum(lexical_counter.values())
+    lexical_density = 100.0 * total_meaningful_words / float(total_words)
+
+    # Calculate the ARI (readability) score
+    ASL = total_words / float(total_sentences)
+    ALW = total_chars / float(total_words)
+    ARI_score = (0.5 * ASL) + (4.71 * ALW) - 21.43
+
+    return round(lexical_density, 2), round(ARI_score, 2)
+
 def main():
     # Process text and clean it
     book_name = "o-henry.epub"
@@ -87,7 +224,12 @@ def main():
 
     # Start sliding window to get text features
     sentiment_analysis()
+    lexical_density_and_readability_analysis()
 
 start = time.time()
 #main()
+input_file = 'clean_output_15.txt'
+print "[+] Reading text from '" + input_file + "'..."
+text = open(input_file).read().lower()
+print lexical_density_and_readability_analysis(text)
 print time.time() - start
