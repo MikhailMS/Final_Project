@@ -11,9 +11,9 @@ List of functionality that would be added later in the priority order:
 ## Installation procedure:
   1. Clone the repo
   2. Run `pip install -r requirements.txt`
-  3. Create folder 'music' with MIDI files and 'output' folder to store generated midi files and neural network models
+  3. Create folder __'music'__ with MIDI files and __'output'__ folder to store generated midi files and neural network models
   4. Place that folder in root directory of the application
-  5. Run 'main.py' file giving a path to the text, that should be analysed
+  5. Run __'main.py'__ file giving a path to the text, that should be analysed
 
 ## **_NOTE_**:
 Application has been created under _**macOS Sierra 10.12 and Python 2.7.10**_.
