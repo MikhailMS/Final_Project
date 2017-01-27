@@ -12,6 +12,7 @@ setup(
         'theano-lstm'
         'numpy >= 1.7.1',
         'scipy >= 0.11',
+        'scikit-learn'
         'sphinx >= 0.5.1',
         'pretty_midi',
         'python-midi',

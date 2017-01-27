@@ -1,28 +1,16 @@
 # Import packages
 import ebooklib
 from ebooklib import epub
-
 from bs4 import BeautifulSoup
-
 import time
 from os import listdir
 from os.path import isfile, join
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from nltk import tokenize
+from operator import itemgetter
 # Import modules
 
-
 # Main class
-def build_sentiment_model():
-    """Trains the sentiment model that is used for determining
-    sentiment of the text
-    Returns a sentiment model
-    """
-
-def sentiment_analysis(text, model):
-    """Takes 'text' and 'model' variables: representation of the text to be analysed
-    and sentiment model respectively.
-    Returns a sentiment score for given text
-    """
-
 def read_in_epub(book_name):
     """Function reads in specific ePub book and
     outputs set of files that are believed to be different chapters.
@@ -67,6 +55,39 @@ def extract_text():
             for string in strings:
                 output.write("%s\n" % string)
 
+def sentiment_analysis(text):
+    """'text' variable: representation of the text to be analysed.
+    Returns a sentiment score for given text piece.
+    To access values, use following keys:
+    'neg' - negative score
+    'pos' - positive score
+    'neu' - neural score
+    """
+    sentences = []
+    scores = []
+    list_sentences = tokenize.sent_tokenize(text)
+    sentences.extend(list_sentences)
+
+    sentiment_analyser = SentimentIntensityAnalyzer()
+    for sentence in sentences:
+        score = sentiment_analyser.polarity_scores(sentence)
+        scores.insert(0,score)
+
+    total_score = {key:sum(map(itemgetter(key), scores)) for key in scores[0]}
+    if total_score['neg']>total_score['pos']:
+        return -abs(total_score['neg']/len(scores))
+    else:
+        return total_score['pos']/len(scores)
+
+def main():
+    # Process text and clean it
+    book_name = "o-henry.epub"
+    read_in_epub(book_name)
+    extract_text()
+
+    # Start sliding window to get text features
+    sentiment_analysis()
+
 start = time.time()
-print extract_text()
+#main()
 print time.time() - start

@@ -1,44 +1,15 @@
 # Import packages
-import collections, itertools, time
-import nltk.classify.util
+import collections, itertools, time, nltk.classify.util
 from nltk.metrics import precision, recall, f_measure, BigramAssocMeasures
 from nltk.corpus import stopwords, movie_reviews, subjectivity
 from nltk.collocations import BigramCollocationFinder
 from nltk.classify import NaiveBayesClassifier
+from sklearn.svm import LinearSVC
+from nltk.classify.scikitlearn import SklearnClassifier
 from nltk.probability import FreqDist, ConditionalFreqDist
-#from nltk.sentiment import SentimentAnalyzer
-#from nltk.sentiment.util import *
 
 # Main class
 """ Approach number 1 """
-def sentiment_model():
-    """Builds a sentiment model"""
-    n_instances = 100
-    subj_docs = [(sent, 'subj') for sent in subjectivity.sents(categories='subj')[:n_instances]]
-    obj_docs = [(sent, 'obj') for sent in subjectivity.sents(categories='obj')[:n_instances]]
-
-    train_subj_docs = subj_docs[:80]
-    test_subj_docs = subj_docs[80:100]
-    train_obj_docs = obj_docs[:80]
-    test_obj_docs = obj_docs[80:100]
-    training_docs = train_subj_docs+train_obj_docs
-    testing_docs = test_subj_docs+test_obj_docs
-    sentim_analyzer = SentimentAnalyzer()
-    all_words_neg = sentim_analyzer.all_words([mark_negation(doc) for doc in training_docs])
-
-    unigram_feats = sentim_analyzer.unigram_word_feats(all_words_neg, min_freq=4)
-    #len(unigram_feats)
-    sentim_analyzer.add_feat_extractor(extract_unigram_feats, unigrams=unigram_feats)
-
-    training_set = sentim_analyzer.apply_features(training_docs)
-    test_set = sentim_analyzer.apply_features(testing_docs)
-
-    trainer = NaiveBayesClassifier.train
-    classifier = sentim_analyzer.train(trainer, training_set)
-    for key,value in sorted(sentim_analyzer.evaluate(test_set).items()):
-        print('{0}: {1}'.format(key, value))
-
-""" Approach number 2 """
 stopset = set(stopwords.words('english'))
 def filtered_word_feats(words, score_fn=BigramAssocMeasures.chi_sq, n=200):
     #words = [word for word in words if word not in stopset] # overall results drop by 2-3%
@@ -46,7 +17,7 @@ def filtered_word_feats(words, score_fn=BigramAssocMeasures.chi_sq, n=200):
     bigrams = bigram_finder.nbest(score_fn, n)
     return dict([(ngram, True) for ngram in itertools.chain(words, bigrams)])
 
-def sentiment_model_2():
+def sentiment_model():
     negids = movie_reviews.fileids('neg')
     posids = movie_reviews.fileids('pos')
 
@@ -77,7 +48,7 @@ def sentiment_model_2():
     print 'neg recall:', recall(refsets['neg'], testsets['neg'])
     print 'neg F-measure:', f_measure(refsets['neg'], testsets['neg'])
 
-""" Approach number 3 """
+""" Approach number 2 """
 def word_feats(words):
     return dict([(word, True) for word in words])
 
@@ -91,7 +62,7 @@ def best_bigram_word_feats(words, score_fn=BigramAssocMeasures.chi_sq, n=200):
     d.update(best_word_feats(words))
     return d
 
-def evaluate_classifier(featx):
+def sentiment_model_2(featx):
     negids = movie_reviews.fileids('neg')
     posids = movie_reviews.fileids('pos')
 
@@ -105,6 +76,7 @@ def evaluate_classifier(featx):
     testfeats = negfeats[negcutoff:] + posfeats[poscutoff:]
 
     classifier = NaiveBayesClassifier.train(trainfeats)
+    #classifier = SklearnClassifier(LinearSVC()).train(trainfeats) # gives improvement in time
     refsets = collections.defaultdict(set)
     testsets = collections.defaultdict(set)
 
@@ -118,7 +90,7 @@ def evaluate_classifier(featx):
     print 'pos recall:', recall(refsets['pos'], testsets['pos'])
     print 'neg precision:', precision(refsets['neg'], testsets['neg'])
     print 'neg recall:', recall(refsets['neg'], testsets['neg'])
-    classifier.show_most_informative_features()
+    #classifier.show_most_informative_features() # Doesn't work with SVC classifier
 
 start = time.time()
 
@@ -148,14 +120,16 @@ for word, freq in word_fd.iteritems():
 best = sorted(word_scores.iteritems(), key=lambda (w,s): s, reverse=True)[:10000]
 bestwords = set([w for w, s in best])
 
-print time.time() - start
+print time.time() - start # Time when values are processed
 
 print 'evaluating single word features' # Test case 1
-evaluate_classifier(word_feats)
+sentiment_model_2(word_feats)
+print 'evaluating single word features is done at: ', time.time() - start # Time when Test case 1 is complete
 
 print 'evaluating best word features' # Test case 2
-evaluate_classifier(best_word_feats)
+sentiment_model_2(best_word_feats)
+print 'evaluating best word features is done at: ', time.time() - start # Time when Test case 2 is complete
 
 print 'evaluating best words + bigram chi_sq word features' # Test case 3
-evaluate_classifier(best_bigram_word_feats)
-print time.time() - start
+sentiment_model_2(best_bigram_word_feats)
+print 'evaluating best words + bigram chi_sq word features is done at: ', time.time() - start # Time when Test case 3 is complete
