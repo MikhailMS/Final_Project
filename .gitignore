@@ -6,4 +6,5 @@ o-henry.epub
 *.pyc
 *.txt
 extra_analysis.py
+sentiment.py
 .DS_Store
