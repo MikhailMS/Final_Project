@@ -239,9 +239,9 @@ def lexical_density_and_readability_analysis(text, allow_digits=False):
     return round(lexical_density, 2), round(ARI_score, 2)
 
 def sliding_window(text):
-    """Function slides through given text with fixed window size and fixed
-    sliding step:
-    window_size and slid_size variables respectivelly
+    """Function slides through given text with fixed window_size and fixed
+    slide_step, applyind sentiment_analysis() and lexical_density_and_readability_analysis()
+    functions to every text sample that falls into window.
     Returns a set of data that is a representation of
     extraxted features from given text
     """
@@ -280,9 +280,9 @@ def sliding_window(text):
     return extracted_features
 
 def run_text_analysis():
-    """Methods runs all functions described above over all text files and
-    Returns a set of extracted features
-    as an array of the form (sentiment, (lexical_score, readability_score))
+    """Methods runs sliding_window() function over all text files and
+    returns a set of extracted features as an array of the form
+        (sentiment, (lexical_score, readability_score))
     """
     # Find file that holds extracted features
     dump_results = [f for f in listdir(".") if (isfile(join(".", f)) and ("extracted_features" in f))]
