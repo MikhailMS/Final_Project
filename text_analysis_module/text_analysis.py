@@ -254,11 +254,11 @@ def sliding_window(text):
         print '\n===' + blue + ' Analysing new sentence...' + normal + '==='
         print ('\n' + green + '[+] Start sentiment analysis...' + normal)
         sentiment = sentiment_analysis(sample)
-        print ('\n' + purple + 'Sentiment analysis is done!' + normal)
+        print ('\n' + green + 'Sentiment analysis is done!' + normal)
 
         print ('\n' + green + '[+] Start lexical density & \n readability analysis...' + normal)
         lexical, readability = lexical_density_and_readability_analysis(sample)
-        print ('\n' + purple + 'Lexical density & readability analysis is done!' + normal)
+        print ('\n' + green + 'Lexical density & readability analysis is done!' + normal)
         extracted_features.append((sentiment, (lexical, readability)))
     else:
         for i in xrange(0, len(text_words)-window_size, slide_size):
@@ -266,11 +266,11 @@ def sliding_window(text):
             print '\n===' + blue + ' Analysing new sentence...' + normal + '==='
             print ('\n' + green + '[+] Start sentiment analysis...' + normal)
             sentiment = sentiment_analysis(sample)
-            print ('\n' + purple + 'Sentiment analysis is done!' + normal)
+            print ('\n' + green + 'Sentiment analysis is done!' + normal)
 
             print ('\n' + green + '[+] Start lexical density & \n readability analysis...' + normal)
             lexical, readability = lexical_density_and_readability_analysis(sample)
-            print ('\n' + purple + 'Lexical density & readability analysis is done!' + normal)
+            print ('\n' + green + 'Lexical density & readability analysis is done!' + normal)
             extracted_features.append((sentiment, (lexical, readability)))
 
     return extracted_features
