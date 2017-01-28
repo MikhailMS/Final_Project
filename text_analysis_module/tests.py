@@ -20,9 +20,9 @@ class TestTextAnalysis(unittest.TestCase):
         The book was good. \
         VADER is VERY SMART, handsome, and FUNNY. The movie was too good. \
         Sentiment analysis with VADER has never been this good. VADER is smart, handsome, and funny!")
-        self.assertNotEqual(density,0)
+        self.assertGreater(density,0)
         self.assertIsNotNone(density)
-        self.assertNotEqual(readability,0)
+        self.assertGreater(readability,0)
         self.assertIsNotNone(readability)
 
 # To allow output in console

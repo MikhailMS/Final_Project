@@ -1,5 +1,5 @@
 # Import packages
-import time, re, collections, ebooklib, nltk
+import time, re, collections, ebooklib, pickle nltk
 from ebooklib import epub
 from bs4 import BeautifulSoup
 from os import listdir
@@ -8,6 +8,16 @@ from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nltk import tokenize
 from operator import itemgetter
 # Import modules
+
+# Font effects --> fancy console colours in bash
+black = "\x1b[1;30m"
+red = "\x1b[1;31m"
+green = "\x1b[1;32m"
+yellow = "\x1b[1;33m"
+blue = "\x1b[1;34m"
+purple = "\x1b[1;35m"
+turquoise = "\x1b[1;36m"
+normal = "\x1b[0m"
 
 # Main class
 def read_in_epub(book_name):
@@ -74,9 +84,13 @@ def sentiment_analysis(text):
 
     total_score = {key:sum(map(itemgetter(key), scores)) for key in scores[0]}
     if total_score['neg']>total_score['pos']:
-        return -abs(total_score['neg']/len(scores))
+        sc = -abs(total_score['neg']/len(scores))
+        print ('\n' + yellow + '[+] Sentiment score... ' + normal + str(sc))
+        return sc
     else:
-        return total_score['pos']/len(scores)
+        sc = total_score['pos']/len(scores)
+        print ('\n' + yellow + '[+] Sentiment score... ' + normal + str(sc))
+        return sc
 
 def lexical_density_and_readability_analysis(text, allow_digits=False):
     """'text' variable: representation of the text to be analysed.
@@ -180,6 +194,7 @@ def lexical_density_and_readability_analysis(text, allow_digits=False):
 
     print "[+] Counting sentences..."
     total_sentences = len(nltk.sent_tokenize(text.decode('utf-8')))
+    print ('|#|' + yellow + '[+] Total number of sentences... ' + normal + str(total_sentences))
 
     print "[+] Split text into words..."
     if allow_digits:
@@ -203,7 +218,8 @@ def lexical_density_and_readability_analysis(text, allow_digits=False):
         # Record total number of words and chars
         total_words += 1
         total_chars += length
-
+    print ('|##|' + yellow + ' Total words... ' + normal + str(total_words))
+    print ('|###|' + yellow + ' Total chars... ' + normal + str(total_chars))
     # Calculate the lexical density of the text.
     #total_unique_words = len(counters[0])
     total_meaningful_words = sum(lexical_counter.values())
@@ -214,22 +230,76 @@ def lexical_density_and_readability_analysis(text, allow_digits=False):
     ALW = total_chars / float(total_words)
     ARI_score = (0.5 * ASL) + (4.71 * ALW) - 21.43
 
+    print ('|####|' + yellow + ' Lexical density score... ' + normal + str(round(lexical_density, 2)) + '%')
+    print ('|#####|' + yellow + ' Readability score... ' + normal + str(round(ARI_score, 2)))
+
     return round(lexical_density, 2), round(ARI_score, 2)
 
-def main():
-    # Process text and clean it
-    book_name = "o-henry.epub"
-    read_in_epub(book_name)
-    extract_text()
+def sliding_window(text):
+    """Function slides through given text with fixed window size and fixed
+    sliding step:
+    window_size and slid_size variables respectivelly
+    Returns a set of data that is a representation of
+    extraxted features from given text
+    """
+    window_size = 200 # Assumably average amount of words that could be read out load per minute
+    slide_size = 50 # Emperically found, that slid_size should be 1/4 of window_size
+    extracted_features = [] # Stores features extracted from text piece
+    text_words = []
+    for word in text.split():
+        text_words.append(word)
 
-    # Start sliding window to get text features
-    sentiment_analysis()
-    lexical_density_and_readability_analysis()
+    if (len(text_words) <= window_size) or (len(text_words)-window_size <= slide_size):
+        sample = ' '.join(text_words)
+        print ('\n' + green + '[+] Start sentiment analysis...' + normal)
+        sentiment = sentiment_analysis(sample)
+        print ('\n' + purple + 'Sentiment analysis is done!' + normal)
+
+        print ('\n' + green + '[+] Start lexical density & \n readability analysis...' + normal)
+        lexical, readability = lexical_density_and_readability_analysis(sample)
+        print ('\n' + purple + 'Lexical density & readability analysis is done!' + normal)
+        extracted_features.append((sentiment, (lexical, readability)))
+    else:
+        for i in xrange(0, len(text_words)-window_size, slide_size):
+            sample = ' '.join(text_words[i:i+200])
+            print ('\n' + green + '[+] Start sentiment analysis...' + normal)
+            sentiment = sentiment_analysis(sample)
+            print ('\n' + purple + 'Sentiment analysis is done!' + normal)
+
+            print ('\n' + green + '[+] Start lexical density & \n readability analysis...' + normal)
+            lexical, readability = lexical_density_and_readability_analysis(sample)
+            print ('\n' + purple + 'Lexical density & readability analysis is done!' + normal)
+            extracted_features.append((sentiment, (lexical, readability)))
+
+    return extracted_features
+
+def main():
+    dump_results = [f for f in listdir(".") if (isfile(join(".", f)) and ("extracted_features" in f))]
+    if dump_results:
+        results = pickle.load( open(dump_results[0], 'rb'))
+        return results
+    else:
+        # Process text and clean it
+        book_name = "o-henry.epub"
+        read_in_epub(book_name)
+        extract_text()
+
+        # Start sliding window to get text features
+        files = [f for f in listdir(".") if (isfile(join(".", f)) and ("clean_output_" in f))]
+        results = []
+        print '\n===' + blue + ' STARTING ANALYSIS ' + normal + '==='
+        for file_name in files:
+            print "\n [+] Reading text from '" + file_name + "'..."
+            text = open(input_file).read().lower()
+            results.append(sliding_window(text))
+
+        print '\n===' + blue + ' RESULTS ' + normal + '==='
+
+        pickle.dump(results, open("extracted_features.p", "wb"))
+
+        return results
 
 start = time.time()
-#main()
-input_file = 'clean_output_15.txt'
-print "[+] Reading text from '" + input_file + "'..."
-text = open(input_file).read().lower()
-print lexical_density_and_readability_analysis(text)
+#features = main()
+#print results
 print time.time() - start
