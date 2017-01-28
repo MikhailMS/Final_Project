@@ -74,15 +74,17 @@ def sentiment_analysis(text):
     """
     sentences = []
     scores = []
-    list_sentences = tokenize.sent_tokenize(text)
-    sentences.extend(list_sentences)
+    sentences.extend(tokenize.sent_tokenize(text))
 
+    # Use NLTK built-in sentiment analyzer
     sentiment_analyser = SentimentIntensityAnalyzer()
     for sentence in sentences:
         score = sentiment_analyser.polarity_scores(sentence)
-        scores.insert(0,score)
+        scores.insert(0,score) # Record polarity score
 
+    # Sum up all scores within the key
     total_score = {key:sum(map(itemgetter(key), scores)) for key in scores[0]}
+
     if total_score['neg']>total_score['pos']:
         sc = -abs(total_score['neg']/len(scores))
         print ('\n' + yellow + '[+] Sentiment score... ' + normal + str(sc))
@@ -220,8 +222,8 @@ def lexical_density_and_readability_analysis(text, allow_digits=False):
         total_chars += length
     print ('|##|' + yellow + ' Total words... ' + normal + str(total_words))
     print ('|###|' + yellow + ' Total chars... ' + normal + str(total_chars))
+
     # Calculate the lexical density of the text.
-    #total_unique_words = len(counters[0])
     total_meaningful_words = sum(lexical_counter.values())
     lexical_density = 100.0 * total_meaningful_words / float(total_words)
 
@@ -243,14 +245,15 @@ def sliding_window(text):
     extraxted features from given text
     """
     window_size = 200 # Assumably average amount of words that could be read out load per minute
-    slide_size = 50 # Emperically found, that slid_size should be 1/4 of window_size
+    slide_size = 50 # For efficiency purpose, slid_size should be 1/4 of window_size
     extracted_features = [] # Stores features extracted from text piece
     text_words = []
-    for word in text.split():
+
+    for word in text.split(): # Get a list of all words in the teext sample
         text_words.append(word)
 
     if (len(text_words) <= window_size) or (len(text_words)-window_size <= slide_size):
-        sample = ' '.join(text_words)
+        sample = ' '.join(text_words) # Join words into set of sentence, that would be analysed
         print '\n===' + blue + ' Analysing new sentence...' + normal + '==='
         print ('\n' + green + '[+] Start sentiment analysis...' + normal)
         sentiment = sentiment_analysis(sample)
@@ -275,22 +278,31 @@ def sliding_window(text):
 
     return extracted_features
 
-def main():
+def run_text_analysis():
+    """Methods runs all functions described above over all text files and
+    Returns a set of extracted features
+    as an array of the form (sentiment, (lexical_score, readability_score))
+    """
+    # Find file that holds extracted features
     dump_results = [f for f in listdir(".") if (isfile(join(".", f)) and ("extracted_features" in f))]
+
+    # If such file exists, then load file and return features
     if dump_results:
         print '\n===' + turquoise + ' PREVIOUS RESULTS FOUND... ' + normal + dump_results[0] + '==='
         print '\n===' + turquoise + ' LOADING RESULTS...' + normal + '==='
         results = pickle.load( open(dump_results[0], 'rb'))
         print '\n===' + turquoise + ' LOAD IS COMPLETED!' + normal + '==='
         return results
+    # Otherwise initiate feature extraction process
     else:
-        # Process text and clean it
+        # Load text and clean it
         book_name = "o-henry.epub"
         print '\n===' + blue + ' READ IN THE BOOK... ' + normal + book_name + '==='
         read_in_epub(book_name)
         print '\n===' + blue + ' CLEAN UP THE TEXT...' + normal + '==='
         extract_text()
 
+        # Give user a chance to manually clean output files to improve results
         while True:
             user_input = raw_input("\n You are given option to do manual cleaning. Type in [Done]/[done] or [d], when finished, otherwise press any key to skip: ")
             if user_input=='Done' or user_input=='done' or user_input=='d':
@@ -311,11 +323,13 @@ def main():
 
         print '\n===' + blue + ' RESULTS ' + normal + '==='
 
+        # Save results to save time on next run
         pickle.dump(results, open("extracted_features.p", "wb"))
 
         return results
 
-start = time.time()
-features = main()
-print features
-print time.time() - start
+# Test run
+#start = time.time()
+#features = run_text_analysis()
+#print features
+#print time.time() - start
