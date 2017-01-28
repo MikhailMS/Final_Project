@@ -1,5 +1,6 @@
 # Import packages
 import time, re, collections, ebooklib, pickle, nltk
+from contextlib import closing
 from ebooklib import epub
 from bs4 import BeautifulSoup
 from os import listdir
@@ -88,11 +89,11 @@ def sentiment_analysis(text):
     if total_score['neg']>total_score['pos']:
         sc = -abs(total_score['neg']/len(scores))
         print ('\n' + yellow + '[+] Sentiment score... ' + normal + str(sc))
-        return sc
+        return round(sc, 2)
     else:
         sc = total_score['pos']/len(scores)
         print ('\n' + yellow + '[+] Sentiment score... ' + normal + str(sc))
-        return sc
+        return round(sc, 2)
 
 def lexical_density_and_readability_analysis(text, allow_digits=False):
     """'text' variable: representation of the text to be analysed.
