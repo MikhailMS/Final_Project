@@ -9,7 +9,7 @@ from nltk import tokenize
 from operator import itemgetter
 # Import modules
 
-# Font effects --> fancy console colours in bash
+# Font effects for console/terminal output
 black = "\x1b[1;30m"
 red = "\x1b[1;31m"
 green = "\x1b[1;32m"
