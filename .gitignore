@@ -5,6 +5,7 @@ o-henry.epub
 *.epub
 *.pyc
 *.txt
+extracted_features.p
 extra_analysis.py
 sentiment.py
 .DS_Store
