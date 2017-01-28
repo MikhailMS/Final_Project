@@ -1,5 +1,5 @@
 # Import packages
-import time, re, collections, ebooklib, pickle nltk
+import time, re, collections, ebooklib, pickle, nltk
 from ebooklib import epub
 from bs4 import BeautifulSoup
 from os import listdir
@@ -251,6 +251,7 @@ def sliding_window(text):
 
     if (len(text_words) <= window_size) or (len(text_words)-window_size <= slide_size):
         sample = ' '.join(text_words)
+        print '\n===' + blue + ' Analysing new sentence...' + normal + '==='
         print ('\n' + green + '[+] Start sentiment analysis...' + normal)
         sentiment = sentiment_analysis(sample)
         print ('\n' + purple + 'Sentiment analysis is done!' + normal)
@@ -262,6 +263,7 @@ def sliding_window(text):
     else:
         for i in xrange(0, len(text_words)-window_size, slide_size):
             sample = ' '.join(text_words[i:i+200])
+            print '\n===' + blue + ' Analysing new sentence...' + normal + '==='
             print ('\n' + green + '[+] Start sentiment analysis...' + normal)
             sentiment = sentiment_analysis(sample)
             print ('\n' + purple + 'Sentiment analysis is done!' + normal)
@@ -276,13 +278,27 @@ def sliding_window(text):
 def main():
     dump_results = [f for f in listdir(".") if (isfile(join(".", f)) and ("extracted_features" in f))]
     if dump_results:
+        print '\n===' + turquoise + ' PREVIOUS RESULTS FOUND... ' + normal + dump_results[0] + '==='
+        print '\n===' + turquoise + ' LOADING RESULTS...' + normal + '==='
         results = pickle.load( open(dump_results[0], 'rb'))
+        print '\n===' + turquoise + ' LOAD IS COMPLETED!' + normal + '==='
         return results
     else:
         # Process text and clean it
         book_name = "o-henry.epub"
+        print '\n===' + blue + ' READ IN THE BOOK... ' + normal + book_name + '==='
         read_in_epub(book_name)
+        print '\n===' + blue + ' CLEAN UP THE TEXT...' + normal + '==='
         extract_text()
+
+        while True:
+            user_input = raw_input("\n You are given option to do manual cleaning. Type in [Done]/[done] or [d], when finished, otherwise press any key to skip: ")
+            if user_input=='Done' or user_input=='done' or user_input=='d':
+                print '\n===' + blue + ' MANUAL CLEANING IS DONE... ' + normal + '==='
+                break
+            else:
+                print '\n===' + red + ' MANUAL CLEANING HAS BEEN SKIPPED... ' + normal + '==='
+                break
 
         # Start sliding window to get text features
         files = [f for f in listdir(".") if (isfile(join(".", f)) and ("clean_output_" in f))]
@@ -290,7 +306,7 @@ def main():
         print '\n===' + blue + ' STARTING ANALYSIS ' + normal + '==='
         for file_name in files:
             print "\n [+] Reading text from '" + file_name + "'..."
-            text = open(input_file).read().lower()
+            text = open(file_name).read().lower()
             results.append(sliding_window(text))
 
         print '\n===' + blue + ' RESULTS ' + normal + '==='
@@ -300,6 +316,6 @@ def main():
         return results
 
 start = time.time()
-#features = main()
-#print results
+features = main()
+print features
 print time.time() - start
