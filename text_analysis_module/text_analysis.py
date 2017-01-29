@@ -1,5 +1,5 @@
 # Import packages
-import time, re, collections, ebooklib, pickle, nltk
+import time, re, collections, ebooklib, pickle, multiprocessing, nltk
 from contextlib import closing
 from ebooklib import epub
 from bs4 import BeautifulSoup
@@ -241,7 +241,7 @@ def lexical_density_and_readability_analysis(text, allow_digits=False):
 def sliding_window(text):
     """Function slides through given text with fixed window_size and fixed
     slide_step, applyind sentiment_analysis() and lexical_density_and_readability_analysis()
-    functions to every text sample that falls into window.
+    functions to every piece of text, that falls into window.
     Returns a set of data that is a representation of
     extraxted features from given text
     """
@@ -278,6 +278,70 @@ def sliding_window(text):
             extracted_features.append((sentiment, (lexical, readability)))
 
     return extracted_features
+
+def identify_number_cores(file_names):
+    """ Takes a list of files that would be analysed
+    and returns the number of cores, that should be used for the task
+    """
+    available_cores = multiprocessing.cpu_count()
+    files_for_analys = len(file_names)
+
+    if available_cores>files_for_analys:
+        return files_for_analys # Number of files in the list
+    else:
+        return available_cores # Number of available cores
+
+def worker(file_names, send_end):
+    """Represents a single worker that completes sliding_window() function
+    and returns results back to main (parent) process
+    """
+    result = []
+    # Start sliding window to get text features
+    for item in file_names:
+        print "\n [+] Reading text from '" + item + "'..."
+        text_sample = open(item).read().lower()
+        result.append(sliding_window(text_sample))
+    send_end.send(result)
+
+def split_tasks(file_names, cores_available):
+    """Splits files across all available cores"""
+    return [ file_names[i::cores_available] for i in xrange(cores_available) ]
+
+def main_helper(file_names):
+    """Helper function to make code more readable:
+    Assigns tasks to available cores -> Receives results from cores ->
+    Puts them into one variable and returns it
+    """
+    if len(file_names)!=0: # Check if text data exists, if so
+        jobs = []
+        available_cores = identify_number_cores(file_names) # Identify required number of cores
+        file_names = split_tasks(file_names, available_cores) # Split tasks between cores
+
+        pipe_list = []
+        print '\n===' + blue + ' STARTING ANALYSIS ' + normal + '==='
+        # Run workers (one worker per core)
+        for i in xrange(available_cores):
+            recv_end, send_end = multiprocessing.Pipe(False)
+            p = multiprocessing.Process(target=worker, args=(file_names[i], send_end))
+            jobs.append(p)
+            pipe_list.append(recv_end)
+            p.start()
+
+        for proc in jobs:
+            proc.join()
+
+        results = [x.recv() for x in pipe_list] # Combine all results
+        results = [x for sublist in results for x in sublist] # Flat results into 1D List
+
+        output_file = "extracted_features.p"
+        print '\n===' + blue + ' SAVE RESULTS TO: ' + normal + output_file + '==='
+        # Save results to save time on next run
+        pickle.dump(results, open(output_file, "wb"))
+
+        print '\n===' + blue + ' RESULTS ' + normal + '==='
+        return results
+    else: # Otherwise
+        print '\n===' + red + ' NO TEXT DATA FOUND. EXITING... ' + normal + '==='
 
 def run_text_analysis():
     """Methods runs sliding_window() function over all text files and
@@ -329,8 +393,51 @@ def run_text_analysis():
 
         return results
 
+def run_text_analysis_in_parallel():
+    """Methods runs sliding_window() function over all text files on all
+    available cpu_cores and returns a set of extracted features as an array
+    in the form -> (sentiment, (lexical_score, readability_score))
+    """
+    # Find file that holds extracted features
+    dump_results = [f for f in listdir(".") if (isfile(join(".", f)) and ("extracted_features" in f))]
+
+    # If such file exists, then load file and return features
+    if dump_results:
+        print '\n===' + turquoise + ' PREVIOUS RESULTS FOUND... ' + normal + dump_results[0] + '==='
+        print '\n===' + turquoise + ' LOADING RESULTS...' + normal + '==='
+        results = pickle.load( open(dump_results[0], 'rb'))
+        print '\n===' + turquoise + ' LOAD IS COMPLETED!' + normal + '==='
+        return results
+    # Otherwise initiate feature extraction process
+    else:
+
+        file_names = [f for f in listdir(".") if (isfile(join(".", f)) and ("clean_output_" in f))]
+
+        if file_names: # If clean_output files exist, skip load & clean stages
+            print '\n===' + turquoise + ' CLEAN DATA FOUND... ' + normal +  '==='
+            return main_helper(file_names) # Complete analysis
+        else:
+            # Otherwise load text and clean it
+            book_name = "o-henry.epub"
+            print '\n===' + blue + ' READ IN THE BOOK... ' + normal + book_name + '==='
+            read_in_epub(book_name)
+            print '\n===' + blue + ' CLEAN UP THE TEXT...' + normal + '==='
+            extract_text()
+
+            # Give user a chance to manually clean output files to improve results
+            while True:
+                user_input = raw_input("\n You are given option to do manual cleaning. Type in [Done]/[done] or [d], when finished, otherwise press any key to skip: ")
+                if user_input=='Done' or user_input=='done' or user_input=='d':
+                    print '\n===' + blue + ' MANUAL CLEANING IS DONE... ' + normal + '==='
+                    break
+                else:
+                    print '\n===' + red + ' MANUAL CLEANING HAS BEEN SKIPPED... ' + normal + '==='
+                    break
+
+            return main_helper(file_names) # Complete analysis
+
 # Test run
 #start = time.time()
-#features = run_text_analysis()
+#features = run_text_analysis_in_parallel()
 #print features
 #print time.time() - start
