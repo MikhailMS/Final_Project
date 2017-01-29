@@ -305,7 +305,8 @@ def worker(file_names, send_end):
 
 def split_tasks(file_names, cores_available):
     """Splits files across all available cores"""
-    return [ file_names[i::cores_available] for i in xrange(cores_available) ]
+    k, m = divmod(len(file_names), cores_available)
+    return list((file_names[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in xrange(cores_available)))
 
 def main_helper(file_names):
     """Helper function to make code more readable:

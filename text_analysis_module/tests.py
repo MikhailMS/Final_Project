@@ -1,6 +1,7 @@
 # Import packages
 import unittest2 as unittest
-from text_analysis import sentiment_analysis, lexical_density_and_readability_analysis
+from text_analysis import sentiment_analysis, split_tasks, identify_number_cores
+from text_analysis import lexical_density_and_readability_analysis
 # Tests go here
 class TestTextAnalysis(unittest.TestCase):
 
@@ -24,6 +25,42 @@ class TestTextAnalysis(unittest.TestCase):
         self.assertIsNotNone(density)
         self.assertGreater(readability,0)
         self.assertIsNotNone(readability)
+    def test_split_tasks(self):
+        file_names = ['file_1']
+        avail_cores_1 = identify_number_cores(file_names)
+        test_1 = split_tasks(file_names, avail_cores_1)
+
+        file_names = ['file_1','file_2']
+        avail_cores_2 = identify_number_cores(file_names)
+        test_2 = split_tasks(file_names, avail_cores_2)
+
+        file_names = ['file_1','file_2','file_3']
+        avail_cores_3 = identify_number_cores(file_names)
+        test_3 = split_tasks(file_names, avail_cores_3)
+
+        file_names = ['file_1','file_2','file_3','file_4']
+        avail_cores_4 = identify_number_cores(file_names)
+        test_4 = split_tasks(file_names, avail_cores_4)
+
+        file_names = ['file_1','file_2','file_3','file_4','file_5']
+        avail_cores_5 = identify_number_cores(file_names)
+        test_5 = split_tasks(file_names, avail_cores_5)
+
+        file_names = ['file_1','file_2','file_3','file_4','file_5','file_6']
+        avail_cores_6 = identify_number_cores(file_names)
+        test_6 = split_tasks(file_names, avail_cores_6)
+
+        file_names = ['file_1','file_2','file_3','file_4','file_5','file_6','file_7']
+        avail_cores_7 = identify_number_cores(file_names)
+        test_7 = split_tasks(file_names, avail_cores_7)
+
+        self.assertEqual(len(test_1), avail_cores_1)
+        self.assertEqual(len(test_2), avail_cores_2)
+        self.assertEqual(len(test_3), avail_cores_3)
+        self.assertEqual(len(test_4), avail_cores_4)
+        self.assertEqual(len(test_5), avail_cores_5)
+        self.assertEqual(len(test_6), avail_cores_6)
+        self.assertEqual(len(test_7), avail_cores_7)
 
 # To allow output in console
 if __name__ == '__main__':
