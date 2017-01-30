@@ -9,4 +9,5 @@ extracted_features.p
 extra_analysis.py
 sentiment.py
 .DS_Store
+.idea
 git_push.sh
