@@ -5,7 +5,7 @@
 ## List of functionality that would be added later in the priority order:
   1. Music input
   2. Music analysis - **in progress**
-  3. Text analysis - **_Available in two forms: single processing & multi processing_**
+  3. Text analysis - **_Available in two forms: single processing & multi processing (default choice)_**
   4. Building neural network
   5. Music output
   6. Text mapping
