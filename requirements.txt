@@ -1,3 +1,4 @@
+matplotlib
 Theano
 theano-lstm
 numpy>=1.7.1
@@ -6,6 +7,10 @@ scikit-learn
 sphinx>=0.5.1
 pretty_midi
 python-midi
+pickle
+multiprocessing
+ebooklib
+bs4
 nltk
 textblob
 textstat

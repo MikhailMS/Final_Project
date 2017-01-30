@@ -6,7 +6,7 @@ setup(
     description='Tool generates music depending on the text provided to it',
     author='Mikhail Molotkov',
     author_email='mmolotkov1@sheffield.ac.uk',
-    url='https://github.com/MikhailMS/Final_Project'
+    url='https://github.com/MikhailMS/Final_Project',
     install_requires=[
         'Theano',
         'theano-lstm'
@@ -16,6 +16,11 @@ setup(
         'sphinx >= 0.5.1',
         'pretty_midi',
         'python-midi',
+        'pickle',
+        'matplotlib',
+        'multiprocessing',
+        'ebooklib',
+        'bs4',
         'nltk',
         'textblob',
         'textstat'

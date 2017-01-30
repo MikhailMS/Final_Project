@@ -1,6 +1,5 @@
 # Import packages
 import time, re, collections, ebooklib, pickle, multiprocessing, nltk
-from contextlib import closing
 from ebooklib import epub
 from bs4 import BeautifulSoup
 from os import listdir
@@ -8,6 +7,7 @@ from os.path import isfile, join
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nltk import tokenize
 from operator import itemgetter
+
 # Import modules
 
 # Font effects for console/terminal output
@@ -20,6 +20,7 @@ purple = "\x1b[1;35m"
 turquoise = "\x1b[1;36m"
 normal = "\x1b[0m"
 
+
 # Main class
 def read_in_epub(book_name):
     """Function reads in specific ePub book and
@@ -27,43 +28,40 @@ def read_in_epub(book_name):
     """
     book = epub.read_epub(book_name)
 
-    #for item in book.get_items():
-    #    print item
     i = 1
     for item in book.get_items_of_type(ebooklib.ITEM_DOCUMENT):
-        #print item.content # html format
-        file_name = 'output_'+str(i)+'.txt'
+        file_name = 'output_' + str(i) + '.txt'
         if item.is_chapter():
             with open(file_name, 'a') as output:
-                output.write(item.get_body_content())
-        #print item.get_body_content() # returns content inside tags with 'body' class
-        i = i+1
-        #print item.get_content() same to content attribute
-        #print item.is_chapter() # returns True if object is a chapter
+                output.write(item.get_body_content())  # write content inside tags with 'body' class
+        i += 1
+
 
 def extract_text():
     """Reads in an output of 'read_in_epub()' function
     and extracts only textual(important) data from those files
     and outputs files with clean text, that would be used for analysis
     """
+
     def clean_string(x):
-        """Returns clean str, without 'p' tag and leftovers of convertion html-> str"""
-        return x.replace('<p>','').replace('</p>','').replace("'",'`').replace('\xe2\x80\x94',' ').replace("\"",'')
+        """Returns clean str, without 'p' tag and leftovers of conversion html-> str"""
+        return x.replace('<p>', '').replace('</p>', '').replace("'", '`').replace('\xe2\x80\x94', ' ').replace("\"", '')
 
     files = [f for f in listdir(".") if (isfile(join(".", f)) and ("output_" in f))]
     for file_name in files:
         page = open(file_name, 'r')
-        soup = soup = BeautifulSoup(page, "lxml")
+        soup = BeautifulSoup(page, "lxml")
         page = soup.find_all('p')
         strings = list()
 
         for sub_str in page:
             strings.append(clean_string(str(sub_str)))
 
-        file_name = "clean_"+file_name
+        file_name = "clean_" + file_name
         with open(file_name, 'a') as output:
             for string in strings:
                 output.write("%s\n" % string)
+
 
 def sentiment_analysis(text):
     """'text' variable: representation of the text to be analysed.
@@ -81,19 +79,20 @@ def sentiment_analysis(text):
     sentiment_analyser = SentimentIntensityAnalyzer()
     for sentence in sentences:
         score = sentiment_analyser.polarity_scores(sentence)
-        scores.insert(0,score) # Record polarity score
+        scores.insert(0, score)  # Record polarity score
 
     # Sum up all scores within the key
-    total_score = {key:sum(map(itemgetter(key), scores)) for key in scores[0]}
+    total_score = {key: sum(map(itemgetter(key), scores)) for key in scores[0]}
 
-    if total_score['neg']>total_score['pos']:
-        sc = -abs(total_score['neg']/len(scores))
+    if total_score['neg'] > total_score['pos']:
+        sc = -abs(total_score['neg'] / len(scores))
         print ('\n' + yellow + '[+] Sentiment score... ' + normal + str(sc))
         return round(sc, 2)
     else:
-        sc = total_score['pos']/len(scores)
+        sc = total_score['pos'] / len(scores)
         print ('\n' + yellow + '[+] Sentiment score... ' + normal + str(sc))
         return round(sc, 2)
+
 
 def lexical_density_and_readability_analysis(text, allow_digits=False):
     """'text' variable: representation of the text to be analysed.
@@ -119,7 +118,7 @@ def lexical_density_and_readability_analysis(text, allow_digits=False):
 
     for token in tagged_tokens:
 
-        if token[1] == None:
+        if token[1] is None:  # if token[1] == None: (from stable version)
             continue
 
         # Adjectives
@@ -229,14 +228,15 @@ def lexical_density_and_readability_analysis(text, allow_digits=False):
     lexical_density = 100.0 * total_meaningful_words / float(total_words)
 
     # Calculate the ARI (readability) score
-    ASL = total_words / float(total_sentences)
-    ALW = total_chars / float(total_words)
-    ARI_score = (0.5 * ASL) + (4.71 * ALW) - 21.43
+    asl = total_words / float(total_sentences)
+    alw = total_chars / float(total_words)
+    ari_score = (0.5 * asl) + (4.71 * alw) - 21.43
 
     print ('|####|' + yellow + ' Lexical density score... ' + normal + str(round(lexical_density, 2)) + '%')
-    print ('|#####|' + yellow + ' Readability score... ' + normal + str(round(ARI_score, 2)))
+    print ('|#####|' + yellow + ' Readability score... ' + normal + str(round(ari_score, 2)))
 
-    return round(lexical_density, 2), round(ARI_score, 2)
+    return round(lexical_density, 2), round(ari_score, 2)
+
 
 def sliding_window(text):
     """Function slides through given text with fixed window_size and fixed
@@ -245,16 +245,16 @@ def sliding_window(text):
     Returns a set of data that is a representation of
     extraxted features from given text
     """
-    window_size = 200 # Assumably average amount of words that could be read out load per minute
-    slide_size = 50 # For efficiency purpose, slid_size should be 1/4 of window_size
-    extracted_features = [] # Stores features extracted from text piece
+    window_size = 200  # Assumably average amount of words that could be read out load per minute
+    slide_size = 50  # For efficiency purpose, slid_size should be 1/4 of window_size
+    extracted_features = []  # Stores features extracted from text piece
     text_words = []
 
-    for word in text.split(): # Get a list of all words in the teext sample
+    for word in text.split():  # Get a list of all words in the teext sample
         text_words.append(word)
 
-    if (len(text_words) <= window_size) or (len(text_words)-window_size <= slide_size):
-        sample = ' '.join(text_words) # Join words into set of sentence, that would be analysed
+    if (len(text_words) <= window_size) or (len(text_words) - window_size <= slide_size):
+        sample = ' '.join(text_words)  # Join words into set of sentence, that would be analysed
         print '\n===' + blue + ' Analysing new sentence...' + normal + '==='
         print ('\n' + green + '[+] Start sentiment analysis...' + normal)
         sentiment = sentiment_analysis(sample)
@@ -265,8 +265,8 @@ def sliding_window(text):
         print ('\n' + green + 'Lexical density & readability analysis is done!' + normal)
         extracted_features.append((sentiment, (lexical, readability)))
     else:
-        for i in xrange(0, len(text_words)-window_size, slide_size):
-            sample = ' '.join(text_words[i:i+200])
+        for i in xrange(0, len(text_words) - window_size, slide_size):
+            sample = ' '.join(text_words[i:i + 200])
             print '\n===' + blue + ' Analysing new sentence...' + normal + '==='
             print ('\n' + green + '[+] Start sentiment analysis...' + normal)
             sentiment = sentiment_analysis(sample)
@@ -279,6 +279,7 @@ def sliding_window(text):
 
     return extracted_features
 
+
 def identify_number_cores(file_names):
     """ Takes a list of files that would be analysed
     and returns the number of cores, that should be used for the task
@@ -286,10 +287,11 @@ def identify_number_cores(file_names):
     available_cores = multiprocessing.cpu_count()
     files_for_analys = len(file_names)
 
-    if available_cores>files_for_analys:
-        return files_for_analys # Number of files in the list
+    if available_cores > files_for_analys:
+        return files_for_analys  # Number of files in the list
     else:
-        return available_cores # Number of available cores
+        return available_cores  # Number of available cores
+
 
 def worker(file_names, send_end):
     """Represents a single worker that completes sliding_window() function
@@ -303,10 +305,12 @@ def worker(file_names, send_end):
         result.append(sliding_window(text_sample))
     send_end.send(result)
 
+
 def split_tasks(file_names, cores_available):
     """Splits files across all available cores"""
     k, m = divmod(len(file_names), cores_available)
     return list((file_names[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in xrange(cores_available)))
+
 
 def text_analysis_helper(file_names):
     """Helper function to make code more readable:
@@ -314,7 +318,7 @@ def text_analysis_helper(file_names):
     Gets results into one variable ->
     Saves and returns results (unless no data found)
     """
-    if len(file_names)!=0: # Check if text data exists, if so
+    if len(file_names) != 0:  # Check if text data exists, if so
         results = []
         print '\n===' + blue + ' STARTING ANALYSIS ' + normal + '==='
         for file_name in file_names:
@@ -328,9 +332,10 @@ def text_analysis_helper(file_names):
         pickle.dump(results, open("extracted_features.p", "wb"))
 
         return results
-    else: # Otherwise
+    else:  # Otherwise
         print '\n===' + red + ' NO TEXT DATA FOUND. EXITING... ' + normal + '==='
         return None
+
 
 def text_analysis_helper_parallel(file_names):
     """Helper function to make code more readable:
@@ -338,10 +343,10 @@ def text_analysis_helper_parallel(file_names):
     Puts results into one variable ->
     Saves and returns results (unless no data found)
     """
-    if len(file_names)!=0: # Check if text data exists, if so
+    if len(file_names) != 0:  # Check if text data exists, if so
         jobs = []
-        available_cores = identify_number_cores(file_names) # Identify required number of cores
-        file_names = split_tasks(file_names, available_cores) # Split tasks between cores
+        available_cores = identify_number_cores(file_names)  # Identify required number of cores
+        file_names = split_tasks(file_names, available_cores)  # Split tasks between cores
 
         pipe_list = []
         print '\n===' + blue + ' STARTING ANALYSIS ' + normal + '==='
@@ -356,8 +361,8 @@ def text_analysis_helper_parallel(file_names):
         for proc in jobs:
             proc.join()
 
-        results = [x.recv() for x in pipe_list] # Combine all results
-        results = [x for sublist in results for x in sublist] # Flat results into 1D List
+        results = [x.recv() for x in pipe_list]  # Combine all results
+        results = [x for sublist in results for x in sublist]  # Flat results into 1D List
 
         output_file = "extracted_features.p"
         print '\n===' + blue + ' SAVE RESULTS TO: ' + normal + output_file + '==='
@@ -366,7 +371,7 @@ def text_analysis_helper_parallel(file_names):
 
         print '\n===' + blue + ' RESULTS ' + normal + '==='
         return results
-    else: # Otherwise
+    else:  # Otherwise
         print '\n===' + red + ' NO TEXT DATA FOUND. EXITING... ' + normal + '==='
         return None
 
@@ -383,15 +388,15 @@ def run_text_analysis():
     if dump_results:
         print '\n===' + turquoise + ' PREVIOUS RESULTS FOUND... ' + normal + dump_results[0] + '==='
         print '\n===' + turquoise + ' LOADING RESULTS...' + normal + '==='
-        results = pickle.load( open(dump_results[0], 'rb'))
+        results = pickle.load(open(dump_results[0], 'rb'))
         print '\n===' + turquoise + ' LOAD IS COMPLETED!' + normal + '==='
         return results
     # Otherwise initiate feature extraction process
     else:
         file_names = [f for f in listdir(".") if (isfile(join(".", f)) and ("clean_output_" in f))]
-        if file_names: # If clean_output files already exist, skip load & clean stages
-            print '\n===' + turquoise + ' CLEAN DATA FOUND... ' + normal +  '==='
-            return text_analysis_helper(file_names) # Complete analysis
+        if file_names:  # If clean_output files already exist, skip load & clean stages
+            print '\n===' + turquoise + ' CLEAN DATA FOUND... ' + normal + '==='
+            return text_analysis_helper(file_names)  # Complete analysis
         else:
             # Otherwise load text and clean it
             book_name = "o-henry.epub"
@@ -402,8 +407,9 @@ def run_text_analysis():
 
             # Give user a chance to manually clean(check) output files to improve results
             while True:
-                user_input = raw_input("\n You are given option to do manual cleaning.\n Type in [Done]/[done] or [d], when finished, otherwise press any key to skip: ")
-                if user_input=='Done' or user_input=='done' or user_input=='d':
+                user_input = raw_input(
+                    "\n You are given option to do manual cleaning.\n Type in [Done]/[done] or [d], when finished, otherwise press any key to skip: ")
+                if user_input == 'Done' or user_input == 'done' or user_input == 'd':
                     print '\n===' + blue + ' MANUAL CLEANING IS DONE... ' + normal + '==='
                     break
                 else:
@@ -411,7 +417,8 @@ def run_text_analysis():
                     break
 
             file_names = [f for f in listdir(".") if (isfile(join(".", f)) and ("clean_output_" in f))]
-            return text_analysis_helper(file_names) # Complete analysis
+            return text_analysis_helper(file_names)  # Complete analysis
+
 
 def run_text_analysis_in_parallel():
     """Methods runs sliding_window() function over all text files on all
@@ -425,7 +432,7 @@ def run_text_analysis_in_parallel():
     if dump_results:
         print '\n===' + turquoise + ' PREVIOUS RESULTS FOUND... ' + normal + dump_results[0] + '==='
         print '\n===' + turquoise + ' LOADING RESULTS...' + normal + '==='
-        results = pickle.load( open(dump_results[0], 'rb'))
+        results = pickle.load(open(dump_results[0], 'rb'))
         print '\n===' + turquoise + ' LOAD IS COMPLETED!' + normal + '==='
         return results
     # Otherwise initiate feature extraction process
@@ -433,9 +440,9 @@ def run_text_analysis_in_parallel():
 
         file_names = [f for f in listdir(".") if (isfile(join(".", f)) and ("clean_output_" in f))]
 
-        if file_names: # If clean_output files exist, skip load & clean stages
-            print '\n===' + turquoise + ' CLEAN DATA FOUND... ' + normal +  '==='
-            return text_analysis_helper_parallel(file_names) # Complete analysis
+        if file_names:  # If clean_output files exist, skip load & clean stages
+            print '\n===' + turquoise + ' CLEAN DATA FOUND... ' + normal + '==='
+            return text_analysis_helper_parallel(file_names)  # Complete analysis
         else:
             # Otherwise load text and clean it
             book_name = "o-henry.epub"
@@ -446,8 +453,9 @@ def run_text_analysis_in_parallel():
 
             # Give user a chance to manually clean output files to improve results
             while True:
-                user_input = raw_input("\n You are given option to do manual cleaning. Type in [Done]/[done] or [d], when finished, otherwise press any key to skip: ")
-                if user_input=='Done' or user_input=='done' or user_input=='d':
+                user_input = raw_input(
+                    "\n You are given option to do manual cleaning. Type in [Done]/[done] or [d], when finished, otherwise press any key to skip: ")
+                if user_input == 'Done' or user_input == 'done' or user_input == 'd':
                     print '\n===' + blue + ' MANUAL CLEANING IS DONE... ' + normal + '==='
                     break
                 else:
@@ -455,10 +463,10 @@ def run_text_analysis_in_parallel():
                     break
 
             file_names = [f for f in listdir(".") if (isfile(join(".", f)) and ("clean_output_" in f))]
-            return text_analysis_helper_parallel(file_names) # Complete analysis
+            return text_analysis_helper_parallel(file_names)  # Complete analysis
 
 # Test run
-#start = time.time()
-#features = run_text_analysis_in_parallel()
-#print features
-#print time.time() - start
+# start = time.time()
+# features = run_text_analysis_in_parallel()
+# print features
+# print time.time() - start

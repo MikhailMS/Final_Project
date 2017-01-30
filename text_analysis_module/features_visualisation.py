@@ -8,6 +8,7 @@ red = "\x1b[1;31m"
 turquoise = "\x1b[1;36m"
 normal = "\x1b[0m"
 
+
 def plot_features():
     # Find file that holds extracted features
     dump_results = [f for f in listdir(".") if (isfile(join(".", f)) and ("extracted_features" in f))]
@@ -16,15 +17,15 @@ def plot_features():
     if dump_results:
         print '\n===' + turquoise + ' PREVIOUS RESULTS FOUND... ' + normal + dump_results[0] + '==='
         print '\n===' + turquoise + ' LOADING RESULTS...' + normal + '==='
-        results = pickle.load( open(dump_results[0], 'rb'))
+        results = pickle.load(open(dump_results[0], 'rb'))
         print '\n===' + turquoise + ' LOAD IS COMPLETED!' + normal + '==='
-        results = [x for sublist in results for x in sublist] # Flat results into 1D List
+        results = [x for sublist in results for x in sublist]  # Flat results into 1D List
 
-        print 'Results length: ',len(results)
+        print 'Results length: ', len(results)
 
-        y_sent = list([x[0] for x in results]) # List of all sentiment scores
-        y_lex = list([x[1][0] for x in results]) # List of all lexical density scores
-        y_read = list([x[1][1] for x in results]) # List of all readability scores
+        y_sent = list([x[0] for x in results])  # List of all sentiment scores
+        y_lex = list([x[1][0] for x in results])  # List of all lexical density scores
+        y_read = list([x[1][1] for x in results])  # List of all readability scores
 
         plt.rcParams["figure.figsize"] = 30, 8
 
@@ -52,5 +53,6 @@ def plot_features():
     # Otherwise
     else:
         print '\n===' + red + 'NO DATA FOUND' + normal + '==='
+
 
 plot_features()
