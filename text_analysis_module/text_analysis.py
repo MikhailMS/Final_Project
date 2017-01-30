@@ -376,7 +376,7 @@ def text_analysis_helper_parallel(file_names):
         return None
 
 
-def run_text_analysis():
+def run_text_analysis(book_name):
     """Methods runs sliding_window() function over all text files and
     returns a set of extracted features as an array
     in the form -> (sentiment, (lexical_score, readability_score))
@@ -399,7 +399,6 @@ def run_text_analysis():
             return text_analysis_helper(file_names)  # Complete analysis
         else:
             # Otherwise load text and clean it
-            book_name = "o-henry.epub"
             print '\n===' + blue + ' READ IN THE BOOK... ' + normal + book_name + '==='
             read_in_epub(book_name)
             print '\n===' + blue + ' CLEAN UP THE TEXT...' + normal + '==='
@@ -420,7 +419,7 @@ def run_text_analysis():
             return text_analysis_helper(file_names)  # Complete analysis
 
 
-def run_text_analysis_in_parallel():
+def run_text_analysis_in_parallel(book_name):
     """Methods runs sliding_window() function over all text files on all
     available cpu_cores and returns a set of extracted features as an array
     in the form -> (sentiment, (lexical_score, readability_score))
@@ -445,7 +444,6 @@ def run_text_analysis_in_parallel():
             return text_analysis_helper_parallel(file_names)  # Complete analysis
         else:
             # Otherwise load text and clean it
-            book_name = "o-henry.epub"
             print '\n===' + blue + ' READ IN THE BOOK... ' + normal + book_name + '==='
             read_in_epub(book_name)
             print '\n===' + blue + ' CLEAN UP THE TEXT...' + normal + '==='
@@ -467,6 +465,7 @@ def run_text_analysis_in_parallel():
 
 # Test run
 # start = time.time()
-# features = run_text_analysis_in_parallel()
+# book_names = [f for f in listdir(".") if (isfile(join(".", f)) and (".epub" in f))]
+# features = run_text_analysis_in_parallel(book_names)
 # print features
 # print time.time() - start
