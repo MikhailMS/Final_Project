@@ -308,10 +308,35 @@ def split_tasks(file_names, cores_available):
     k, m = divmod(len(file_names), cores_available)
     return list((file_names[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in xrange(cores_available)))
 
-def main_helper(file_names):
+def text_analysis_helper(file_names):
+    """Helper function to make code more readable:
+    Runs sliding_window() function on all clean text files ->
+    Gets results into one variable ->
+    Saves and returns results (unless no data found)
+    """
+    if len(file_names)!=0: # Check if text data exists, if so
+        results = []
+        print '\n===' + blue + ' STARTING ANALYSIS ' + normal + '==='
+        for file_name in file_names:
+            print "\n [+] Reading text from '" + file_name + "'..."
+            text = open(file_name).read().lower()
+            results.append(sliding_window(text))
+
+        print '\n===' + blue + ' RESULTS ' + normal + '==='
+
+        # Save results to save time on next run
+        pickle.dump(results, open("extracted_features.p", "wb"))
+
+        return results
+    else: # Otherwise
+        print '\n===' + red + ' NO TEXT DATA FOUND. EXITING... ' + normal + '==='
+        return None
+
+def text_analysis_helper_parallel(file_names):
     """Helper function to make code more readable:
     Assigns tasks to available cores -> Receives results from cores ->
-    Puts them into one variable and returns it
+    Puts results into one variable ->
+    Saves and returns results (unless no data found)
     """
     if len(file_names)!=0: # Check if text data exists, if so
         jobs = []
@@ -343,11 +368,13 @@ def main_helper(file_names):
         return results
     else: # Otherwise
         print '\n===' + red + ' NO TEXT DATA FOUND. EXITING... ' + normal + '==='
+        return None
+
 
 def run_text_analysis():
     """Methods runs sliding_window() function over all text files and
-    returns a set of extracted features as an array of the form
-        (sentiment, (lexical_score, readability_score))
+    returns a set of extracted features as an array
+    in the form -> (sentiment, (lexical_score, readability_score))
     """
     # Find file that holds extracted features
     dump_results = [f for f in listdir(".") if (isfile(join(".", f)) and ("extracted_features" in f))]
@@ -361,38 +388,30 @@ def run_text_analysis():
         return results
     # Otherwise initiate feature extraction process
     else:
-        # Load text and clean it
-        book_name = "o-henry.epub"
-        print '\n===' + blue + ' READ IN THE BOOK... ' + normal + book_name + '==='
-        read_in_epub(book_name)
-        print '\n===' + blue + ' CLEAN UP THE TEXT...' + normal + '==='
-        extract_text()
+        file_names = [f for f in listdir(".") if (isfile(join(".", f)) and ("clean_output_" in f))]
+        if file_names: # If clean_output files already exist, skip load & clean stages
+            print '\n===' + turquoise + ' CLEAN DATA FOUND... ' + normal +  '==='
+            return text_analysis_helper(file_names) # Complete analysis
+        else:
+            # Otherwise load text and clean it
+            book_name = "o-henry.epub"
+            print '\n===' + blue + ' READ IN THE BOOK... ' + normal + book_name + '==='
+            read_in_epub(book_name)
+            print '\n===' + blue + ' CLEAN UP THE TEXT...' + normal + '==='
+            extract_text()
 
-        # Give user a chance to manually clean output files to improve results
-        while True:
-            user_input = raw_input("\n You are given option to do manual cleaning. Type in [Done]/[done] or [d], when finished, otherwise press any key to skip: ")
-            if user_input=='Done' or user_input=='done' or user_input=='d':
-                print '\n===' + blue + ' MANUAL CLEANING IS DONE... ' + normal + '==='
-                break
-            else:
-                print '\n===' + red + ' MANUAL CLEANING HAS BEEN SKIPPED... ' + normal + '==='
-                break
+            # Give user a chance to manually clean(check) output files to improve results
+            while True:
+                user_input = raw_input("\n You are given option to do manual cleaning.\n Type in [Done]/[done] or [d], when finished, otherwise press any key to skip: ")
+                if user_input=='Done' or user_input=='done' or user_input=='d':
+                    print '\n===' + blue + ' MANUAL CLEANING IS DONE... ' + normal + '==='
+                    break
+                else:
+                    print '\n===' + red + ' MANUAL CLEANING HAS BEEN SKIPPED... ' + normal + '==='
+                    break
 
-        # Start sliding window to get text features
-        files = [f for f in listdir(".") if (isfile(join(".", f)) and ("clean_output_" in f))]
-        results = []
-        print '\n===' + blue + ' STARTING ANALYSIS ' + normal + '==='
-        for file_name in files:
-            print "\n [+] Reading text from '" + file_name + "'..."
-            text = open(file_name).read().lower()
-            results.append(sliding_window(text))
-
-        print '\n===' + blue + ' RESULTS ' + normal + '==='
-
-        # Save results to save time on next run
-        pickle.dump(results, open("extracted_features.p", "wb"))
-
-        return results
+            file_names = [f for f in listdir(".") if (isfile(join(".", f)) and ("clean_output_" in f))]
+            return text_analysis_helper(file_names) # Complete analysis
 
 def run_text_analysis_in_parallel():
     """Methods runs sliding_window() function over all text files on all
@@ -416,7 +435,7 @@ def run_text_analysis_in_parallel():
 
         if file_names: # If clean_output files exist, skip load & clean stages
             print '\n===' + turquoise + ' CLEAN DATA FOUND... ' + normal +  '==='
-            return main_helper(file_names) # Complete analysis
+            return text_analysis_helper_parallel(file_names) # Complete analysis
         else:
             # Otherwise load text and clean it
             book_name = "o-henry.epub"
@@ -435,7 +454,8 @@ def run_text_analysis_in_parallel():
                     print '\n===' + red + ' MANUAL CLEANING HAS BEEN SKIPPED... ' + normal + '==='
                     break
 
-            return main_helper(file_names) # Complete analysis
+            file_names = [f for f in listdir(".") if (isfile(join(".", f)) and ("clean_output_" in f))]
+            return text_analysis_helper_parallel(file_names) # Complete analysis
 
 # Test run
 #start = time.time()
