@@ -15,7 +15,9 @@
   2. Run `pip install -r requirements.txt`
   3. Create folders: __'music'__ with MIDI files and __'output'__ to store generated midi files and neural network models, within root directory
   4. Place that folder in root directory of the application
-  5. Run __'main.py'__ file giving a path to the text, that should be analysed
+  5. Run __'main.py'__ file giving a path to the text, that should be analysed 
+  
+** At the moment only text_analysis module could be run. To do so, go to according folder, add there book in the `.epub` format and run `text_analysis.py` file**
 
 ## **_NOTE_**:
 Application has been created under _**macOS Sierra 10.12 and Python 2.7.10**_.
