@@ -469,5 +469,3 @@ def run_text_analysis_in_parallel(book_name):
 # features = run_text_analysis_in_parallel(book_names)
 # print features
 # print time.time() - start
-
-print file_names
