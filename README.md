@@ -1,12 +1,12 @@
 # Final year project - musification of text data.
 ## Functionality is under development.
 List of functionality that would be added later in the priority order:
-- [ ] Music input
-- [ ] Music analysis - **in progress**
-- [x] Text analysis - **_Available in two forms: single processing & multi processing_**
-- [ ] Building neural network
-- [ ] Music output
-- [ ] Text mapping
+1. Music input
+2. Music analysis - **in progress**
+3. Text analysis - **_Available in two forms: single processing & multi processing_**
+4. Building neural network
+5. Music output
+6. Text mapping
 
 ## Installation procedure:
   1. Clone the repo
