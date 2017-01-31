@@ -4,7 +4,7 @@
 
 ## List of functionality that would be added later in the priority order:
 
-1. - [x] **Text analysis module**: __Available in two forms: single processing & multi processing (default choice)__
+1. - [x] **Text analysis module**: _Available in two forms: single processing & multi processing (default choice)_
   1. - [x] Read in epub files
   2. - [x] Clean text - automatic and manual cleaning
   3. - [x] Sentiment analysis
@@ -13,7 +13,7 @@
   6. - [x] Sliding window feature - moves through text rather then giving a score to the whole text
 
 2. - [ ] **Music generation module**:
-  1. - [ ] Music input - __in progress__
+  1. - [ ] Music input - _in progress_
   2. - [ ] Music analysis
   3. - [ ] Build LSTM model
   4. - [ ] Training LSTM model
