@@ -4,17 +4,21 @@
 
 ## List of functionality that would be added later in the priority order:
 
- - [ ] Music input
+1. - [x] Text analysis module: **_Available in two forms: single processing & multi processing (default choice)_**
+  1. [x] Read in epub files
+  2. [x] Clean text - automatic and manual cleaning
+  3. [x] Sentiment analysis
+  4. [x] Lexical density analysis
+  5. [x] Readability analysis - possibly worth adding variety of formulas
+  6. [x] Sliding window feature - moves through text rather then giving a score to the whole text
 
- - [ ] Music analysis - **in progress**
-
- - [x] Text analysis - **_Available in two forms: single processing & multi processing (default choice)_**
-
- - [ ] Building neural network
-
- - [ ] Music output
-
- - [ ] Text mapping
+2. [ ] Music generation module:
+  1. [ ] Music input - **in progress**
+  2. [ ] Music analysis
+  3. [ ] Build LSTM model
+  4. [ ] Training LSTM model
+  5. [ ] Music generation
+  6. [ ] Mapping text features onto music ones
 
 ## Installation procedure:
   1. Clone the repo
