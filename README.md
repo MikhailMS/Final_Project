@@ -19,7 +19,7 @@
 ## Installation procedure:
   1. Clone the repo
   2. Run `pip install -r requirements.txt`
-  3. Create folders: __'music'__ with MIDI files and __'output'__ to store generated midi files and neural network models, within root directory
+  3. Create folder __'music'__ with MIDI files within root directory
   4. Run __'main.py'__ file giving a path to the text, that should be analysed
 
   **At the moment only text_analysis module could be run. To do so, go to according folder, place a book in the `.epub` format, uncomment bottom lines in `text_analysis.py` and run it.**
