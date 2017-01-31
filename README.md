@@ -22,7 +22,7 @@
   3. Create folder __'music'__ with MIDI files within root directory
   4. Run __'main.py'__ file giving a path to the text, that should be analysed
 
-  **At the moment only text_analysis module could be run. To do so, go to according folder, place a book in the `.epub` format, uncomment bottom lines in `text_analysis.py` and run it.**
+**At the moment only text_analysis module could be run. To do so, go to according folder, place a book in the `.epub` format, uncomment bottom lines in `text_analysis.py` and run it.**
 
 ## **_NOTE_**:
 Application has been created under _**macOS Sierra 10.12 and Python 2.7.10**_.
