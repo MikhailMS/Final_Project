@@ -1,15 +1,21 @@
-""" Main file that should be called
-    to run application.
-"""
 # Import packages
 
 
 # Import modules
-from music_analysis_module import MusicAnalysis
-from music_input_module import MusicInput
+from text_analysis_module import run_text_analysis_in_parallel
 
-# Initialise objects
-music_input = MusicInput('path_to_file')
+def run_application():
+    """Main function that runs whole application:
+    Starting with text analysis -> train LSTM model ->
+    Use text features to generate music
+    """
+    # Find books in root directory
+    book_names = [f for f in listdir(".") if (isfile(join(".", f)) and (".epub" in f))]
+    # Run text analysis (using multiprocessing package)
+    text_features = run_text_analysis_in_parallel(book_name[0])
 
-# Run code
-print music_input
+    # Run model training
+
+    # Run text feature mapping onto music parameters
+
+    # Run music generation
