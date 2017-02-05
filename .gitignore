@@ -1,14 +1,9 @@
-__init__.pyc
-lewis-caroll.epub
-o-henry.epub
 *.txt
 !requirements.txt
 *.epub
 *.pyc
-*.txt
 extracted_features.p
-extra_analysis.py
-sentiment.py
+test.py
 .DS_Store
 .idea
 git_push.sh
