@@ -15,7 +15,7 @@
 2. - [ ] **Music generation module**:
   1. - [x] Music input
   2. - [ ] Music analysis - _in progress_
-  3. - [] Build LSTM model - **50% is complete.** _**need to include extra parameters**_
+  3. - [ ] Build LSTM model - **50% is complete.** _**need to include extra parameters**_
   4. - [x] Training LSTM model
   5. - [x] Music generation
   6. - [ ] Mapping text features onto music ones
