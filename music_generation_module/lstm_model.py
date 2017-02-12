@@ -4,6 +4,7 @@ import numpy as np
 from theano_lstm import Embedding, LSTM, RNN, StackedCells, Layer, create_optimization_updates, masked_loss, MultiDropout
 
 # Import modules
+from output_to_input import OutputFormToInputFormOp
 
 # Main class
 def has_hidden(layer):
@@ -156,7 +157,8 @@ class Model(object):
             # l.initial_hidden_state.set_value(val.get_value())
 
     def setup_train(self):
-"""========================= Initialization ========================="""
+
+        """========================= Initialization ========================="""
         # dimensions: (batch, time, notes, input_data) with input_data as in architecture
         self.input_mat = T.btensor4()
         """Assumably we need an array of btensor4 variables to hold extra params input
@@ -170,7 +172,7 @@ class Model(object):
 
         self.epsilon = np.spacing(np.float32(1.0))
 
-"""======== Functions that represent steps(forward learning) ========"""
+        """======== Functions that represent steps(forward learning) ========"""
         def step_time(in_data, *other):
             """Returns new state for time_model"""
             other = list(other)
@@ -198,15 +200,17 @@ class Model(object):
             new_states = self.extra_model.forward(in_data, prev_hiddens=hiddens, dropout=masks)
             return new_states
 
-"""=================== STAGE 0 - data preparation ==================="""
-        # We generate an output for each input, so it doesn't make sense to use the last output as an input.
-        # Note that we assume the sentinel start value is already present
-        # TEMP CHANGE: NO SENTINEL
+        """=================== STAGE 0 - data preparation ==================="""
+        """We generate an output for each input, so it doesn't make sense to use the last output as an input.
+        Important note: assumption is made, that the sentinel start value is already present
+        If temp changes, no sentinel presented"""
         input_slice = self.input_mat[:,0:-1]
         n_batch, n_time, n_note, n_ipn = input_slice.shape
+
         # time_inputs is a matrix (time, batch/note, input_per_note)
         time_inputs = input_slice.transpose((1,0,2,3)).reshape((n_time,n_batch*n_note,n_ipn))
         num_time_parallel = time_inputs.shape[1]
+
         """If we apply above changes [161-163, 166-168] we need to make different input_slice
         input_slice = self.input_mat[0][:,0:-1]
         n_batch, n_time, n_note, n_ipn = input_slice.shape
@@ -219,7 +223,7 @@ class Model(object):
         Make similar num_time_parallel as above
         """
 
-"""====================== STAGE 1 - time_model ======================"""
+        """====================== STAGE 1 - time_model ======================"""
         # Apply dropout to time_model
         if self.dropout > 0:
             time_masks = theano_lstm.MultiDropout( [(num_time_parallel, shape) for shape in self.t_layer_sizes], self.dropout)
@@ -250,7 +254,7 @@ class Model(object):
         note_inputs = T.concatenate( [time_final, note_choices_inputs], axis=2 )
         num_timebatch = note_inputs.shape[1]
 
-"""===================== STAGE 2 - pitch_model ======================"""
+        """===================== STAGE 2 - pitch_model ======================"""
         # Apply dropout to pitch_model
         if self.dropout > 0:
             pitch_masks = theano_lstm.MultiDropout( [(num_timebatch, shape) for shape in self.p_layer_sizes], self.dropout)
@@ -270,11 +274,11 @@ class Model(object):
         # In order to pass this results to STAGE 3, we need to follow similar pattern to STAGE 1
         # However, it may not be needed, and STAGE 3 would require data directly from STAGE 1
 
-"""===================== STAGE 3 - extra_model ======================"""
+        """===================== STAGE 3 - extra_model ======================"""
         # Apply dropout to extra_model
         # Then carry on as for STAGE 2
 
-"""=================== Finish train(update stage) ==================="""
+        """=================== Finish train(update stage) ==================="""
         """The cost of the entire procedure is the negative log likelihood of the events all happening.
         For the purposes of training, if the ouputted probability is P, then the likelihood of seeing a 1 is P, and
         the likelihood of seeing 0 is (1-P). So the likelihood is (1-P)(1-x) + Px = 2Px - P - x + 1
@@ -304,7 +308,6 @@ class Model(object):
             inputs=[self.input_mat, self.output_mat],
             outputs= ensure_list(self.time_thoughts) + ensure_list(self.note_thoughts) + [self.cost],
             allow_input_downcast=True)
-
 
     def _predict_step_note(self, in_data_from_time, *states):
         """Takes data and layers' states and returns new states + chosen notes"""
@@ -340,9 +343,122 @@ class Model(object):
         """
 
     def setup_predict(self):
-        
+        """In prediction mode, note steps are contained in the time steps.
+        So the passing gets complicated."""
+        self.predict_seed = T.bmatrix()
+        self.steps_to_simulate = T.iscalar()
+
+        def step_time(*states):
+            # States is [ *hiddens, prev_result, time]
+            hiddens = list(states[:-2])
+            in_data = states[-2]
+            time = states[-1]
+
+            # Apply dropout to time_model
+            if self.dropout > 0:
+                masks = [1 - self.dropout for layer in self.time_model.layers]
+                masks[0] = None
+            else:
+                masks = []
+
+            # new_states is a list of matrix [layer](notes, hidden_states) for each layer
+            new_states = self.time_model.forward(in_data, prev_hiddens=hiddens, dropout=masks)
+
+            time_final = get_last_layer(new_states) # Only last layer is important
+            start_note_values = theano.tensor.alloc(np.array(0,dtype=np.int8), 2)
+
+            """Here things get a little bit complicated. In the training case, we can pass in a combination of the
+            time net's activations with the known choices. But in the prediction case, those choices don't
+            exist yet. So instead of iterating over the combination, we only iterate over activations,
+            and then combine in the previous outputs in the step. And then, since we are passing outputs to
+            previous inputs, we need an additional note_outputs_info for the initial "previous" output of zero.
+            """
+            note_outputs_info = ([ initial_state_with_taps(layer) for layer in self.pitch_model.layers ] +
+                                 [ dict(initial=start_note_values, taps=[-1]) ])
+
+            # notes_result is a list of matrix [layer/output](notes, onOrArtic)
+            notes_result, updates = theano.scan(fn=self._predict_step_note, sequences=[time_final], outputs_info=note_outputs_info)
+
+            output = get_last_layer(notes_result)
+            next_input = OutputFormToInputFormOp()(output, time + 1)
+
+            return (ensure_list(new_states) + [ next_input, time + 1, output ]), updates
+
+
+        num_notes = self.predict_seed.shape[0]
+
+        time_outputs_info = ([ initial_state_with_taps(layer, num_notes) for layer in self.time_model.layers ] +
+                             [ dict(initial=self.predict_seed, taps=[-1]),
+                               dict(initial=0, taps=[-1]),
+                               None ])
+
+        time_result, updates = theano.scan( fn=step_time,
+                                            outputs_info=time_outputs_info,
+                                            n_steps=self.steps_to_simulate )
+
+        self.predict_thoughts = time_result # Should it be time_result[:-1] ??
+        self.predicted_output = time_result[-1]
+
+        self.predict_fun = theano.function(
+            inputs=[self.steps_to_simulate, self.conservativity, self.predict_seed],
+            outputs=self.predicted_output,
+            updates=updates,
+            allow_input_downcast=True)
+        self.predict_thought_fun = theano.function(
+            inputs=[self.steps_to_simulate, self.conservativity, self.predict_seed],
+            outputs=ensure_list(self.predict_thoughts),
+            updates=updates,
+            allow_input_downcast=True)
 
     def setup_slow_walk(self):
 
+        self.walk_input = theano.shared(np.ones((2,2), dtype='int8'))
+        self.walk_time = theano.shared(np.array(0, dtype='int64'))
+        self.walk_hiddens = [theano.shared(np.ones((2,2), dtype=theano.config.floatX)) for layer in self.time_model.layers if has_hidden(layer)]
+
+        # Apply dropout to time_model
+        if self.dropout > 0:
+            masks = [1 - self.dropout for layer in self.time_model.layers]
+            masks[0] = None
+        else:
+            masks = []
+
+        # new_states is a list of matrix [layer](notes, hidden_states) for each layer
+        new_states = self.time_model.forward(self.walk_input, prev_hiddens=self.walk_hiddens, dropout=masks)
+
+        time_final = get_last_layer(new_states) # Only last layer is important
+        start_note_values = theano.tensor.alloc(np.array(0,dtype=np.int8), 2)
+        note_outputs_info = ([ initial_state_with_taps(layer) for layer in self.pitch_model.layers ] +
+                             [ dict(initial=start_note_values, taps=[-1]) ])
+
+        # Now notes_result is a list of matrix [layer/output](notes, onOrArtic)
+        notes_result, updates = theano.scan(fn=self._predict_step_note, sequences=[time_final], outputs_info=note_outputs_info)
+        """Similar should be done for extra params
+        extra_results, updates = theano.scan(fn=self._predict_step_extra, sequences=[time_final], outputs_info=extra_outputs_info)"""
+
+        output = get_last_layer(notes_result)
+        next_input = OutputFormToInputFormOp()(output, self.walk_time + 1)
+
+        # Last layer in new_states & notes_results is irrelevant, because they are empty
+        slow_walk_results = (new_states[:-1] + notes_result[:-1] + [ next_input, output ])
+        updates.update({
+                self.walk_time: self.walk_time+1,
+                self.walk_input: next_input
+            })
+
+        updates.update({hidden:newstate for hidden, newstate, layer in zip(self.walk_hiddens, new_states, self.time_model.layers) if has_hidden(layer)})
+
+        self.slow_walk_fun = theano.function(
+            inputs=[self.conservativity],
+            outputs=slow_walk_results,
+            updates=updates,
+            allow_input_downcast=True)
 
     def start_slow_walk(self, seed):
+        seed = np.array(seed)
+        num_notes = seed.shape[0]
+
+        self.walk_time.set_value(0)
+        self.walk_input.set_value(seed)
+        for layer, hidden in zip((l for l in self.time_model.layers if has_hidden(l)),self.walk_hiddens):
+            hidden.set_value(np.repeat(np.reshape(layer.initial_hidden_state.get_value(), (1,-1)), num_notes, axis=0))
