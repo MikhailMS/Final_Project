@@ -11,7 +11,7 @@ batch_width = 10 # number of sequences in a batch
 batch_len = 16*8 # length of each sequence
 division_len = 16 # interval between possible start locations
 
-def loadMidiSamples(dirpath):
+def loadMusic(dirpath):
     """Loads MIDI files into a dictionary
     Returns a dictionary of the form -> {'name': MIDI_statematrix}
     """

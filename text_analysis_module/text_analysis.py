@@ -8,8 +8,6 @@ from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nltk import tokenize
 from operator import itemgetter
 
-# Import modules
-
 # Font effects for console/terminal output
 black = "\x1b[1;30m"
 red = "\x1b[1;31m"
@@ -19,7 +17,6 @@ blue = "\x1b[1;34m"
 purple = "\x1b[1;35m"
 turquoise = "\x1b[1;36m"
 normal = "\x1b[0m"
-
 
 # Main class
 def read_in_epub(book_name):
