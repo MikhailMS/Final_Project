@@ -13,11 +13,11 @@
   6. - [x] Sliding window feature - moves through text rather then giving a score to the whole text
 
 2. - [ ] **Music generation module**:
-  1. - [ ] Music input
-  2. - [ ] Music analysis
-  3. - [ ] Build LSTM model - _in progress_
-  4. - [ ] Training LSTM model
-  5. - [ ] Music generation
+  1. - [x] Music input
+  2. - [ ] Music analysis - _in progress_
+  3. - [] Build LSTM model - **50% is complete.** _**need to include extra parameters**_
+  4. - [x] Training LSTM model
+  5. - [x] Music generation
   6. - [ ] Mapping text features onto music ones
 
 ## Installation procedure:
