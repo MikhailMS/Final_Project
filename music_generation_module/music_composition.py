@@ -18,14 +18,10 @@ turquoise = "\x1b[1;36m"
 normal = "\x1b[0m"
 
 # Main class
-def music_composition(m, pcs, times, keep_thoughts=False, output_dir='output', name="final"):
+def music_composition(m, pcs, times, keep_thoughts=False, name="final"):
     """Function composes music according to trained LSTM models
     and stores them into 'output' folder
     """
-    try:
-        os.makedirs(output_dir)
-    except:
-        pass
     xIpt, xOpt = map(lambda x: numpy.array(x, dtype='int8'), model_training.getMidiSegment(pcs))
     all_outputs = [xOpt[0]]
     if keep_thoughts:
@@ -49,6 +45,13 @@ def music_composition(m, pcs, times, keep_thoughts=False, output_dir='output', n
     	pickle.dump(all_thoughts, open('output/'+name+'.p','wb'))
 
 start = time.time()
+output_dir = 'output'
+try:
+    os.mkdir(output_dir)
+    print output_dir + ' been created.'
+except:
+    print output_dir + ' already exists.'
+    pass
 print '\n===' + turquoise + ' MIDI files are being loaded... ' + normal + '==='
 pcs = model_training.loadMusic("music") # Load all available MIDI files
 
