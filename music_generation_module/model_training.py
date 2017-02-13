@@ -50,7 +50,7 @@ def getMidiBatch(midi):
     """Returns input and output arrays, where each contains specific number of
     sequences (batch_width)"""
     inp,out = zip(*[getMidiSegment(midi) for _ in range(batch_width)])
-    return numpy.array(inp), numpy.array(outp)
+    return numpy.array(inp), numpy.array(out)
 
 def trainModel(model, midi, epochs, start=0):
     """Trains LSTM model on loaded midi files at given number of epochs
