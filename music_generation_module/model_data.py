@@ -5,25 +5,14 @@ import itertools
 from midi_to_statematrix import upperBound, lowerBound
 
 # Main class
-def startSentinel():
-    def noteSentinel(note):
-        position = note
-        part_position = [position]
-
-        pitchclass = (note + lowerBound) % 12
-        part_pitchclass = [int(i == pitchclass) for i in range(12)]
-
-        return part_position + part_pitchclass + [0]*66 + [1] # Why 69 values are returned
-    return [noteSentinel(note) for note in range(upperBound-lowerBound)]
-
-def getOrDefault(list, index, default):
+def getOrDefault(datalist, index, default):
     """If index is out of scope, then returns default value,
-    otherwise returns value from the 'list' at index 'index'
+    otherwise returns value from the 'datalist' at index 'index'
     """
     try:
-        return l[i]
+        return datalist[index]
     except IndexError:
-        return d
+        return default
 
 def buildContext(state):
     """Returns a list of notes that a played at the given state:
@@ -43,6 +32,9 @@ def buildBeat(time):
     return [2*x-1 for x in [time%2, (time//2)%2, (time//4)%2, (time//8)%2]]
 
 def noteInputForm(note, state, context, beat):
+    """Converts given state into input form (data list),
+    that is used to train model
+    """
     position = note
     part_position = [position]
 
@@ -69,4 +61,3 @@ def noteStateMatrixToInputForm(statematrix):
     """
     input_form = [ noteStateSingleToInputForm(state,time) for time,state in enumerate(statematrix) ]
     return input_form
-    # return  [noteStateSingleToInputForm(state,time) for time,state in enumerate(statematrix)]
