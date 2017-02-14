@@ -84,7 +84,7 @@ def trainModel(model, midi, epochs, start=0):
                 break
             error = model.update_fun(*getMidiBatch(midi))
             if i % 100 == 0:
-                print "epoch {}, error={}".format(i,error)
+                print '\n[+]' + yellow + " Epoch {}, error={} ".format(i,error) + normal + '==='
             if i % 500 == 0 or (i % 100 == 0 and i < 1000):
                 xIpt, xOpt = map(numpy.array, getMidiSegment(midi))
                 noteStateMatrixToMidi(numpy.concatenate((numpy.expand_dims(xOpt[0], 0), model.predict_fun(batch_len, 1, xIpt[0])), axis=0),'output/sample{}'.format(i))
