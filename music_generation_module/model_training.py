@@ -1,10 +1,16 @@
 # Import packages
-import os, random
+import random, re
+from os import listdir
+from os.path import isfile, join
 import cPickle as pickle
 import signal
 # Import modules
 from midi_to_statematrix import *
 from model_data import *
+
+# Font effects for console/terminal output
+turquoise = "\x1b[1;36m"
+normal = "\x1b[0m"
 
 # Main class
 batch_width = 12 # number of sequences in a batch
@@ -17,13 +23,13 @@ def loadMusic(dirpath):
     """
     pieces = {}
 
-    for fname in os.listdir(dirpath):
+    for fname in listdir(dirpath):
         if fname[-4:] not in ('.mid','.MID'):
             continue
 
         name = fname[:-4]
 
-        outMatrix = midiToNoteStateMatrix(os.path.join(dirpath, fname))
+        outMatrix = midiToNoteStateMatrix(join(dirpath, fname))
         if len(outMatrix) < batch_len:
             continue
 
@@ -61,14 +67,40 @@ def trainModel(model, midi, epochs, start=0):
     def signal_handler(signame, sf):
         stopflag[0] = True
     old_handler = signal.signal(signal.SIGINT, signal_handler)
-    for i in range(start,start+epochs):
-        if stopflag[0]:
-            break
-        error = model.update_fun(*getMidiBatch(midi))
-        if i % 100 == 0:
-            print "epoch {}, error={}".format(i,error)
-        if i % 500 == 0 or (i % 100 == 0 and i < 1000):
-            xIpt, xOpt = map(numpy.array, getMidiSegment(midi))
-            noteStateMatrixToMidi(numpy.concatenate((numpy.expand_dims(xOpt[0], 0), model.predict_fun(batch_len, 1, xIpt[0])), axis=0),'output/sample{}'.format(i))
-            pickle.dump(model.learned_config,open('output/params{}.p'.format(i), 'wb'))
-    signal.signal(signal.SIGINT, old_handler)
+
+    available_configs = [f for f in listdir("./output/") if (isfile(join("./output/", f)) and ("params" in f))]
+    if available_configs:
+        print '\n===' + turquoise + ' PREVIOUS RESULTS FOUND... ' + normal + '==='
+        available_configs = [re.findall(r'\d+', x) for x in available_configs]
+        available_configs = [x for sublist in available_configs for x in sublist]
+        available_configs.sort()
+        high_conf = available_configs[-1]
+
+        print '\n===' + turquoise + ' LOADING ' + 'params{}.p'.format(high_conf) + normal + '==='
+        model.learned_config = pickle.load(open('output/params{}.p'.format(high_conf), 'rb'))
+        print '\n===' + turquoise + ' LOAD IS COMPLETED! STARTING TRAINING' + normal + '==='
+
+        for i in range(int(high_conf)+100,epochs):
+            if stopflag[0]:
+                break
+            error = model.update_fun(*getMidiBatch(midi))
+            if i % 100 == 0:
+                print "epoch {}, error={}".format(i,error)
+            if i % 500 == 0 or (i % 100 == 0 and i < 1000):
+                xIpt, xOpt = map(numpy.array, getMidiSegment(midi))
+                noteStateMatrixToMidi(numpy.concatenate((numpy.expand_dims(xOpt[0], 0), model.predict_fun(batch_len, 1, xIpt[0])), axis=0),'output/sample{}'.format(i))
+                pickle.dump(model.learned_config,open('output/params{}.p'.format(i), 'wb'))
+        signal.signal(signal.SIGINT, old_handler)
+
+    else:
+        for i in range(start,start+epochs):
+            if stopflag[0]:
+                break
+            error = model.update_fun(*getMidiBatch(midi))
+            if i % 100 == 0:
+                print "epoch {}, error={}".format(i,error)
+            if i % 500 == 0 or (i % 100 == 0 and i < 1000):
+                xIpt, xOpt = map(numpy.array, getMidiSegment(midi))
+                noteStateMatrixToMidi(numpy.concatenate((numpy.expand_dims(xOpt[0], 0), model.predict_fun(batch_len, 1, xIpt[0])), axis=0),'output/sample{}'.format(i))
+                pickle.dump(model.learned_config,open('output/params{}.p'.format(i), 'wb'))
+        signal.signal(signal.SIGINT, old_handler)
