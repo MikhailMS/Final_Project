@@ -35,7 +35,7 @@ def music_composition_helper(m, pcs, times, keep_thoughts=False, name="final"):
     if keep_thoughts:
     	pickle.dump(all_thoughts, open('output/'+name+'.p','wb'))
 
-def run_music_composition(epochs=5500):
+def run_music_composition(music_length= 30, epochs=5500):
     start = time.time()
     output_dir = 'output'
     try:
@@ -58,7 +58,7 @@ def run_music_composition(epochs=5500):
     pickle.dump( m.learned_config, open( "output/final_learned_config.p", "wb" ) )
 
     print '\n===' + turquoise + ' Music is being generated... ' + normal + '==='
-    music_composition_helper(m, pcs, 30, name="composition") # Generate music
+    music_composition_helper(m, pcs, music_length, name="composition") # Generate music
 
     finish = time.time() - start
     print '\n===' + turquoise + ' Application has finished in ' + normal + str(finish) + 'seconds' + '==='
