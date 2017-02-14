@@ -10,6 +10,7 @@ from model_data import *
 
 # Font effects for console/terminal output
 turquoise = "\x1b[1;36m"
+green = "\x1b[1;32m"
 normal = "\x1b[0m"
 
 # Main class
@@ -70,17 +71,18 @@ def trainModel(model, midi, epochs, start=0):
 
     available_configs = [f for f in listdir("./output/") if (isfile(join("./output/", f)) and ("params" in f))]
     if available_configs:
-        print '\n===' + turquoise + ' PREVIOUS RESULTS FOUND... ' + normal + '==='
+        print '\n===' + green + ' PREVIOUS RESULTS FOUND... ' + normal + '==='
         available_configs = [re.findall(r'\d+', x) for x in available_configs]
         available_configs = [x for sublist in available_configs for x in sublist]
+        available_configs = map(int,available_configs)
         available_configs.sort()
-        high_conf = available_configs[-1]
+        best_conf = available_configs[-1]
 
-        print '\n===' + turquoise + ' LOADING ' + 'params{}.p'.format(high_conf) + normal + '==='
-        model.learned_config = pickle.load(open('output/params{}.p'.format(high_conf), 'rb'))
-        print '\n===' + turquoise + ' LOAD IS COMPLETED! STARTING TRAINING' + normal + '==='
+        print '\n===' + green + ' LOADING ' + 'params{}.p '.format(best_conf) + normal + '==='
+        model.learned_config = pickle.load(open('output/params{}.p'.format(best_conf), 'rb'))
+        print '\n===' + green + ' LOAD IS COMPLETED! STARTING TRAINING... ' + normal + '==='
 
-        for i in range(int(high_conf)+100,epochs):
+        for i in range(best_conf+100,epochs):
             if stopflag[0]:
                 break
             error = model.update_fun(*getMidiBatch(midi))
