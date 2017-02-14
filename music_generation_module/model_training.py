@@ -79,7 +79,7 @@ def trainModel(model, midi, epochs, start=0):
         model.learned_config = pickle.load(open('output/params{}.p'.format(best_conf), 'rb'))
         print '\n===' + green + ' LOAD IS COMPLETED! STARTING TRAINING... ' + normal + '==='
 
-        for i in range(best_conf+100,epochs):
+        for i in range(best_conf,epochs):
             if stopflag[0]:
                 break
             error = model.update_fun(*getMidiBatch(midi))
