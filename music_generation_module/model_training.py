@@ -4,14 +4,11 @@ from os import listdir
 from os.path import isfile, join
 import cPickle as pickle
 import signal
+
 # Import modules
 from midi_to_statematrix import *
 from model_data import *
-
-# Font effects for console/terminal output
-turquoise = "\x1b[1;36m"
-green = "\x1b[1;32m"
-normal = "\x1b[0m"
+from utils import *
 
 # Main class
 batch_width = 12 # number of sequences in a batch

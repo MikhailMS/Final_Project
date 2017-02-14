@@ -23,8 +23,8 @@
 ## Installation procedure:
   1. Clone the repo
   2. Run `pip install -r requirements.txt`
-  3. To test **text_analysis_module**, add a book in the `.epub` format to the root directory and run __'main.py'__ file
-  4. To test **music_generation_module**, create folder __'music'__ with MIDI files and  empty __'output'__ folder within **music_generation_module** directory, then go to that directory and run __music_composition.py__ file
+  3. To test **text_analysis_module**, add a book in the `.epub` format to the _**text_analysis_module**_ folder, then uncomment __run_text_analysis_in_parallel()__ part in __'main.py'__ file from root directory and run the file
+  4. To test **music_generation_module**, create folder __'music'__ with MIDI files within **music_generation_module** directory, then uncomment __run_music_composition()__ part in __'main.py'__ file from root directory and run the file
 
 **At the moment only text_analysis_module is fully functional. music_generation_module has limited abilities, and only
 able to compose music depending on time stamps and notes. Module is still on development stage.**

@@ -6,19 +6,10 @@ from midi_to_statematrix import *
 # Import modules
 import model_training
 import lstm_model
-
-# Font effects for console/terminal output
-black = "\x1b[1;30m"
-red = "\x1b[1;31m"
-green = "\x1b[1;32m"
-yellow = "\x1b[1;33m"
-blue = "\x1b[1;34m"
-purple = "\x1b[1;35m"
-turquoise = "\x1b[1;36m"
-normal = "\x1b[0m"
+from utils import *
 
 # Main class
-def music_composition(m, pcs, times, keep_thoughts=False, name="final"):
+def music_composition_helper(m, pcs, times, keep_thoughts=False, name="final"):
     """Function composes music according to trained LSTM models
     and stores them into 'output' folder
     """
@@ -44,29 +35,30 @@ def music_composition(m, pcs, times, keep_thoughts=False, name="final"):
     if keep_thoughts:
     	pickle.dump(all_thoughts, open('output/'+name+'.p','wb'))
 
-start = time.time()
-output_dir = 'output'
-try:
-    os.mkdir(output_dir)
-    print output_dir + ' been created.'
-except:
-    print output_dir + ' already exists.'
-    pass
-print '\n===' + turquoise + ' MIDI files are being loaded... ' + normal + '==='
-pcs = model_training.loadMusic("music") # Load all available MIDI files
+def run_music_composition():
+    start = time.time()
+    output_dir = 'output'
+    try:
+        os.mkdir(output_dir)
+        print output_dir + ' been created.'
+    except:
+        print output_dir + ' already exists.'
+        pass
+    print '\n===' + turquoise + ' MIDI files are being loaded... ' + normal + '==='
+    pcs = model_training.loadMusic("music") # Load all available MIDI files
 
-print '\n===' + turquoise + ' LSTM model is being created... ' + normal + '==='
-m = lstm_model.Model([300,300],[100,50], dropout=0.5) # Create LSTM model
+    print '\n===' + turquoise + ' LSTM model is being created... ' + normal + '==='
+    m = lstm_model.Model([300,300],[100,50], dropout=0.5) # Create LSTM model
 
-print '\n===' + turquoise + ' LSTM model is being trained... ' + normal + '==='
-model_training.trainModel(m, pcs, 5500) # Train LSTM model
+    print '\n===' + turquoise + ' LSTM model is being trained... ' + normal + '==='
+    model_training.trainModel(m, pcs, 5500) # Train LSTM model
 
-# Save LSTM model configuration
-print '\n===' + turquoise + ' LSTM model is being saved... ' + normal + '==='
-pickle.dump( m.learned_config, open( "output/final_learned_config.p", "wb" ) )
+    # Save LSTM model configuration
+    print '\n===' + turquoise + ' LSTM model is being saved... ' + normal + '==='
+    pickle.dump( m.learned_config, open( "output/final_learned_config.p", "wb" ) )
 
-print '\n===' + turquoise + ' Music is being generated... ' + normal + '==='
-music_composition(m, pcs, 30, name="composition") # Generate music
+    print '\n===' + turquoise + ' Music is being generated... ' + normal + '==='
+    music_composition_helper(m, pcs, 30, name="composition") # Generate music
 
-finish = time.time() - start
-print '\n===' + turquoise + ' Application has finished in ' + normal + str(finish) + 'seconds' + '==='
+    finish = time.time() - start
+    print '\n===' + turquoise + ' Application has finished in ' + normal + str(finish) + 'seconds' + '==='

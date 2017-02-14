@@ -7,16 +7,7 @@ from os.path import isfile, join
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nltk import tokenize
 from operator import itemgetter
-
-# Font effects for console/terminal output
-black = "\x1b[1;30m"
-red = "\x1b[1;31m"
-green = "\x1b[1;32m"
-yellow = "\x1b[1;33m"
-blue = "\x1b[1;34m"
-purple = "\x1b[1;35m"
-turquoise = "\x1b[1;36m"
-normal = "\x1b[0m"
+from utils import *
 
 # Main class
 def read_in_epub(book_name):
@@ -396,8 +387,9 @@ def run_text_analysis(book_name):
             return text_analysis_helper(file_names)  # Complete analysis
         else:
             # Otherwise load text and clean it
-            print '\n===' + blue + ' READ IN THE BOOK... ' + normal + book_name + '==='
-            read_in_epub(book_name)
+            book_names = [f for f in listdir(".") if (isfile(join(".", f)) and (".epub" in f))]
+            print '\n===' + blue + ' READ IN THE BOOK... ' + normal + book_names[0] + '==='
+            read_in_epub(book_names[0])
             print '\n===' + blue + ' CLEAN UP THE TEXT...' + normal + '==='
             extract_text()
 
@@ -416,7 +408,7 @@ def run_text_analysis(book_name):
             return text_analysis_helper(file_names)  # Complete analysis
 
 
-def run_text_analysis_in_parallel(book_name):
+def run_text_analysis_in_parallel():
     """Methods runs sliding_window() function over all text files on all
     available cpu_cores and returns a set of extracted features as an array
     in the form -> (sentiment, (lexical_score, readability_score))
@@ -440,9 +432,11 @@ def run_text_analysis_in_parallel(book_name):
             print '\n===' + turquoise + ' CLEAN DATA FOUND... ' + normal + '==='
             return text_analysis_helper_parallel(file_names)  # Complete analysis
         else:
+            # Find books in root directory
+            book_names = [f for f in listdir(".") if (isfile(join(".", f)) and (".epub" in f))]
             # Otherwise load text and clean it
-            print '\n===' + blue + ' READ IN THE BOOK... ' + normal + book_name + '==='
-            read_in_epub(book_name)
+            print '\n===' + blue + ' READ IN THE BOOK... ' + normal + book_names[0] + ' ==='
+            read_in_epub(book_names[0])
             print '\n===' + blue + ' CLEAN UP THE TEXT...' + normal + '==='
             extract_text()
 
