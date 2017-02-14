@@ -35,7 +35,7 @@ def music_composition_helper(m, pcs, times, keep_thoughts=False, name="final"):
     if keep_thoughts:
     	pickle.dump(all_thoughts, open('output/'+name+'.p','wb'))
 
-def run_music_composition():
+def run_music_composition(epochs=5500):
     start = time.time()
     output_dir = 'output'
     try:
@@ -51,7 +51,7 @@ def run_music_composition():
     m = lstm_model.Model([300,300],[100,50], dropout=0.5) # Create LSTM model
 
     print '\n===' + turquoise + ' LSTM model is being trained... ' + normal + '==='
-    model_training.trainModel(m, pcs, 5500) # Train LSTM model
+    model_training.trainModel(m, pcs, epochs) # Train LSTM model
 
     # Save LSTM model configuration
     print '\n===' + turquoise + ' LSTM model is being saved... ' + normal + '==='
