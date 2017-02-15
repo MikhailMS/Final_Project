@@ -79,7 +79,7 @@ def trainModel(model, midi, epochs, start=0):
         best_conf = available_configs[-1]
 
         #"./{}/music".format(module_name)
-        print '\n===' + green + ' LOADING ' + './{}/{}/params{}.p '.format(module_name, output_dir, best_conf) + normal + '==='
+        print '\n===' + green + ' LOADING CONFIGURATION FROM ' + './{}/{}/params{}.p '.format(module_name, output_dir, best_conf) + normal + '==='
         model.learned_config = pickle.load(open('./{}/{}/params{}.p'.format(module_name, output_dir, best_conf), 'rb'))
         print '\n===' + green + ' LOAD IS COMPLETED! STARTING TRAINING... ' + normal + '==='
 
@@ -96,6 +96,8 @@ def trainModel(model, midi, epochs, start=0):
         signal.signal(signal.SIGINT, old_handler)
 
     else:
+        print '\n===' + red + ' NO PREVIOUS CONFIGURATIONS FOUND. ' + normal + '==='
+        print '\n===' + green + ' STARTING TRAINING FROM SCRATCH... ' + normal + '==='
         for i in range(start,start+epochs):
             if stopflag[0]:
                 break
