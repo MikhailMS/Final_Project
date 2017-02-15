@@ -42,10 +42,10 @@ def run_music_composition(music_length= 30, epochs=5500):
     start = time.time()
 
     try:
-        os.mkdir(output_dir)
-        print '\n===' + green + ' {} been created '.format(output_dir) + normal + '==='
+        os.mkdir('./{}/{}'.format(module_name, output_dir))
+        print '\n===' + green + ' {} folder been created '.format(output_dir) + normal + '==='
     except:
-        print '\n===' + red + ' {} already exists '.format(output_dir) + normal + '==='
+        print '\n===' + red + ' {} folder already exists '.format(output_dir) + normal + '==='
         pass
     print '\n===' + turquoise + ' MIDI files are being loaded... ' + normal + '==='
     pcs = model_training.loadMusic("./{}/music".format(module_name)) # Load all available MIDI files

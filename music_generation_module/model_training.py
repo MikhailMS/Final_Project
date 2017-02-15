@@ -78,8 +78,9 @@ def trainModel(model, midi, epochs, start=0):
         available_configs.sort()
         best_conf = available_configs[-1]
 
-        print '\n===' + green + ' LOADING ' + './{}/{}/params{}.p '.format(module_name, output_dir, best_conf) + normal + '==='
-        model.learned_config = pickle.load(open('./{}/{}/params{}.p '.format(module_name, output_dir, best_conf), 'rb'))
+        #"./{}/music".format(module_name)
+        print '\n===' + green + ' LOADING ' + './{}/{}/params{}.p'.format(module_name, output_dir, best_conf) + normal + '==='
+        model.learned_config = pickle.load(open('./{}/{}/params{}.p'.format(module_name, output_dir, best_conf), 'rb'))
         print '\n===' + green + ' LOAD IS COMPLETED! STARTING TRAINING... ' + normal + '==='
 
         for i in range(best_conf,epochs):
@@ -90,8 +91,8 @@ def trainModel(model, midi, epochs, start=0):
                 print '\n[+]' + yellow + " Epoch {}, error={} ".format(i,error) + normal + '==='
             if i % 500 == 0 or (i % 100 == 0 and i < 1000):
                 xIpt, xOpt = map(numpy.array, getMidiSegment(midi))
-                noteStateMatrixToMidi(numpy.concatenate((numpy.expand_dims(xOpt[0], 0), model.predict_fun(batch_len, 1, xIpt[0])), axis=0),'output/sample{}'.format(i))
-                pickle.dump(model.learned_config,open('./{}/{}/params{}.p '.format(module_name, output_dir, i), 'wb'))
+                noteStateMatrixToMidi(numpy.concatenate((numpy.expand_dims(xOpt[0], 0), model.predict_fun(batch_len, 1, xIpt[0])), axis=0),'./{}/{}/sample{}'.format(module_name, output_dir, i))
+                pickle.dump(model.learned_config,open('./{}/{}/params{}.p'.format(module_name, output_dir, i), 'wb'))
         signal.signal(signal.SIGINT, old_handler)
 
     else:
@@ -103,6 +104,6 @@ def trainModel(model, midi, epochs, start=0):
                 print '\n[+]' + yellow + " Epoch {}, error={} ".format(i,error) + normal + '==='
             if i % 500 == 0 or (i % 100 == 0 and i < 1000):
                 xIpt, xOpt = map(numpy.array, getMidiSegment(midi))
-                noteStateMatrixToMidi(numpy.concatenate((numpy.expand_dims(xOpt[0], 0), model.predict_fun(batch_len, 1, xIpt[0])), axis=0),'output/sample{}'.format(i))
-                pickle.dump(model.learned_config,open('./{}/{}/params{}.p '.format(module_name, output_dir, i), 'wb'))
+                noteStateMatrixToMidi(numpy.concatenate((numpy.expand_dims(xOpt[0], 0), model.predict_fun(batch_len, 1, xIpt[0])), axis=0),'./{}/{}/sample{}'.format(module_name, output_dir, i))
+                pickle.dump(model.learned_config,open('./{}/{}/params{}.p'.format(module_name, output_dir, i), 'wb'))
         signal.signal(signal.SIGINT, old_handler)

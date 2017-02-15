@@ -20,4 +20,4 @@ def run_application():
 if __name__ == '__main__':
     #run_application() # - ONLY COMMAND TO EXIST HERE
     #run_text_analysis_in_parallel() # - FOR TEST PURPOSES
-    #run_music_composition() # - FOR TEST PURPOSES
+    run_music_composition() # - FOR TEST PURPOSES
