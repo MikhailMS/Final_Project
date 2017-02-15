@@ -10,10 +10,13 @@ from midi_to_statematrix import *
 from model_data import *
 from utils import *
 
+
 # Main class
 batch_width = 12 # number of sequences in a batch
 batch_len = 16*8 # length of each sequence
 division_len = 16 # interval between possible start locations
+module_name = 'music_generation_module'
+output_dir = 'output'
 
 def loadMusic(dirpath):
     """Loads MIDI files into a dictionary
@@ -66,7 +69,7 @@ def trainModel(model, midi, epochs, start=0):
         stopflag[0] = True
     old_handler = signal.signal(signal.SIGINT, signal_handler)
 
-    available_configs = [f for f in listdir("./output/") if (isfile(join("./output/", f)) and ("params" in f))]
+    available_configs = [f for f in listdir("./{}/{}/".format(module_name, output_dir)) if (isfile(join("./{}/{}/".format(module_name, output_dir), f)) and ("params" in f))]
     if available_configs:
         print '\n===' + green + ' PREVIOUS RESULTS FOUND... ' + normal + '==='
         available_configs = [re.findall(r'\d+', x) for x in available_configs]
@@ -75,8 +78,8 @@ def trainModel(model, midi, epochs, start=0):
         available_configs.sort()
         best_conf = available_configs[-1]
 
-        print '\n===' + green + ' LOADING ' + 'params{}.p '.format(best_conf) + normal + '==='
-        model.learned_config = pickle.load(open('output/params{}.p'.format(best_conf), 'rb'))
+        print '\n===' + green + ' LOADING ' + './{}/{}/params{}.p '.format(module_name, output_dir, best_conf) + normal + '==='
+        model.learned_config = pickle.load(open('./{}/{}/params{}.p '.format(module_name, output_dir, best_conf), 'rb'))
         print '\n===' + green + ' LOAD IS COMPLETED! STARTING TRAINING... ' + normal + '==='
 
         for i in range(best_conf,epochs):
@@ -88,7 +91,7 @@ def trainModel(model, midi, epochs, start=0):
             if i % 500 == 0 or (i % 100 == 0 and i < 1000):
                 xIpt, xOpt = map(numpy.array, getMidiSegment(midi))
                 noteStateMatrixToMidi(numpy.concatenate((numpy.expand_dims(xOpt[0], 0), model.predict_fun(batch_len, 1, xIpt[0])), axis=0),'output/sample{}'.format(i))
-                pickle.dump(model.learned_config,open('output/params{}.p'.format(i), 'wb'))
+                pickle.dump(model.learned_config,open('./{}/{}/params{}.p '.format(module_name, output_dir, i), 'wb'))
         signal.signal(signal.SIGINT, old_handler)
 
     else:
@@ -97,9 +100,9 @@ def trainModel(model, midi, epochs, start=0):
                 break
             error = model.update_fun(*getMidiBatch(midi))
             if i % 100 == 0:
-                print "epoch {}, error={}".format(i,error)
+                print '\n[+]' + yellow + " Epoch {}, error={} ".format(i,error) + normal + '==='
             if i % 500 == 0 or (i % 100 == 0 and i < 1000):
                 xIpt, xOpt = map(numpy.array, getMidiSegment(midi))
                 noteStateMatrixToMidi(numpy.concatenate((numpy.expand_dims(xOpt[0], 0), model.predict_fun(batch_len, 1, xIpt[0])), axis=0),'output/sample{}'.format(i))
-                pickle.dump(model.learned_config,open('output/params{}.p'.format(i), 'wb'))
+                pickle.dump(model.learned_config,open('./{}/{}/params{}.p '.format(module_name, output_dir, i), 'wb'))
         signal.signal(signal.SIGINT, old_handler)

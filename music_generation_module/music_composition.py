@@ -9,6 +9,9 @@ import lstm_model
 from utils import *
 
 # Main class
+module_name = 'music_generation_module'
+output_dir = 'output'
+
 def music_composition_helper(m, pcs, times, keep_thoughts=False, name="final"):
     """Function composes music according to trained LSTM models
     and stores them into 'output' folder
@@ -31,13 +34,13 @@ def music_composition_helper(m, pcs, times, keep_thoughts=False, name="final"):
     	all_outputs.append(resdata[-1])
     	if keep_thoughts:
     		all_thoughts.append(resdata)
-    noteStateMatrixToMidi(numpy.array(all_outputs),'output/'+name)
+    noteStateMatrixToMidi(numpy.array(all_outputs),'./{}/{}/{}'.format(module_name, output_dir, name))
     if keep_thoughts:
-    	pickle.dump(all_thoughts, open('output/'+name+'.p','wb'))
+    	pickle.dump(all_thoughts, open('./{}/{}/{}.p'.format(module_name, output_dir, name),'wb'))
 
 def run_music_composition(music_length= 30, epochs=5500):
     start = time.time()
-    output_dir = 'output'
+
     try:
         os.mkdir(output_dir)
         print output_dir + ' been created.'
@@ -45,7 +48,7 @@ def run_music_composition(music_length= 30, epochs=5500):
         print output_dir + ' already exists.'
         pass
     print '\n===' + turquoise + ' MIDI files are being loaded... ' + normal + '==='
-    pcs = model_training.loadMusic("music") # Load all available MIDI files
+    pcs = model_training.loadMusic("./{}/music".format(module_name)) # Load all available MIDI files
 
     print '\n===' + turquoise + ' LSTM model is being created... ' + normal + '==='
     m = lstm_model.Model([300,300],[100,50], dropout=0.5) # Create LSTM model
@@ -55,7 +58,7 @@ def run_music_composition(music_length= 30, epochs=5500):
 
     # Save LSTM model configuration
     print '\n===' + turquoise + ' LSTM model is being saved... ' + normal + '==='
-    pickle.dump( m.learned_config, open( "output/final_learned_config.p", "wb" ) )
+    pickle.dump( m.learned_config, open( "./{}/{}/final_learned_config.p".format(module_name, output_dir), "wb" ) )
 
     print '\n===' + turquoise + ' Music is being generated... ' + normal + '==='
     music_composition_helper(m, pcs, music_length, name="composition") # Generate music

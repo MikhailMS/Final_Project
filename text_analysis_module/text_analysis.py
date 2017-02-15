@@ -10,6 +10,8 @@ from operator import itemgetter
 from utils import *
 
 # Main class
+module_name = 'text_analysis_module'
+
 def read_in_epub(book_name):
     """Function reads in specific ePub book and
     outputs set of files that are believed to be different chapters.
@@ -18,8 +20,8 @@ def read_in_epub(book_name):
 
     i = 1
     for item in book.get_items_of_type(ebooklib.ITEM_DOCUMENT):
-        file_name = 'output_' + str(i) + '.txt'
         if item.is_chapter():
+            file_name = 'output_' + str(i) + '.txt'
             with open(file_name, 'a') as output:
                 output.write(item.get_body_content())  # write content inside tags with 'body' class
         i += 1
@@ -35,7 +37,7 @@ def extract_text():
         """Returns clean str, without 'p' tag and leftovers of conversion html-> str"""
         return x.replace('<p>', '').replace('</p>', '').replace("'", '`').replace('\xe2\x80\x94', ' ').replace("\"", '')
 
-    files = [f for f in listdir(".") if (isfile(join(".", f)) and ("output_" in f))]
+    files = [f for f in listdir("./{}/".format(module_name)) if (isfile(join("./{}/".format(module_name), f)) and ("output_" in f))]
     for file_name in files:
         page = open(file_name, 'r')
         soup = BeautifulSoup(page, "lxml")
@@ -370,24 +372,26 @@ def run_text_analysis(book_name):
     in the form -> (sentiment, (lexical_score, readability_score))
     """
     # Find file that holds extracted features
-    dump_results = [f for f in listdir(".") if (isfile(join(".", f)) and ("extracted_features" in f))]
+    dump_results = [f for f in listdir("./{}/{}".format(module_name)) if (isfile(join("./{}/{}".format(module_name), f)) and ("extracted_features" in f))]
 
     # If such file exists, then load file and return features
     if dump_results:
         print '\n===' + turquoise + ' PREVIOUS RESULTS FOUND... ' + normal + dump_results[0] + '==='
         print '\n===' + turquoise + ' LOADING RESULTS...' + normal + '==='
-        results = pickle.load(open(dump_results[0], 'rb'))
+        results = pickle.load(open("./{}/{}".format(module_name, dump_results[0]), 'rb'))
         print '\n===' + turquoise + ' LOAD IS COMPLETED!' + normal + '==='
         return results
     # Otherwise initiate feature extraction process
     else:
-        file_names = [f for f in listdir(".") if (isfile(join(".", f)) and ("clean_output_" in f))]
+        file_names = [f for f in listdir("./{}/{}".format(module_name)) if (isfile(join("./{}/{}".format(module_name), f)) and ("clean_output_" in f))]
         if file_names:  # If clean_output files already exist, skip load & clean stages
+            file_names = ["./{}/{}".format(module_name, x) for x in file_names]
             print '\n===' + turquoise + ' CLEAN DATA FOUND... ' + normal + '==='
             return text_analysis_helper(file_names)  # Complete analysis
         else:
             # Otherwise load text and clean it
-            book_names = [f for f in listdir(".") if (isfile(join(".", f)) and (".epub" in f))]
+            book_names = [f for f in listdir("./{}/{}".format(module_name)) if (isfile(join("./{}/{}".format(module_name), f)) and (".epub" in f))]
+            book_names = ["./{}/{}".format(module_name, x) for x in book_names]
             print '\n===' + blue + ' READ IN THE BOOK... ' + normal + book_names[0] + '==='
             read_in_epub(book_names[0])
             print '\n===' + blue + ' CLEAN UP THE TEXT...' + normal + '==='
@@ -404,7 +408,8 @@ def run_text_analysis(book_name):
                     print '\n===' + red + ' MANUAL CLEANING HAS BEEN SKIPPED... ' + normal + '==='
                     break
 
-            file_names = [f for f in listdir(".") if (isfile(join(".", f)) and ("clean_output_" in f))]
+            file_names = [f for f in listdir("./{}/{}".format(module_name)) if (isfile(join("./{}/{}".format(module_name), f)) and ("clean_output_" in f))]
+            file_names = ["./{}/{}".format(module_name, x) for x in file_names]
             return text_analysis_helper(file_names)  # Complete analysis
 
 
@@ -414,27 +419,28 @@ def run_text_analysis_in_parallel():
     in the form -> (sentiment, (lexical_score, readability_score))
     """
     # Find file that holds extracted features
-    dump_results = [f for f in listdir(".") if (isfile(join(".", f)) and ("extracted_features" in f))]
+    dump_results = [f for f in listdir("./{}/".format(module_name)) if (isfile(join("./{}/".format(module_name), f)) and ("extracted_features" in f))]
 
     # If such file exists, then load file and return features
     if dump_results:
-        print '\n===' + turquoise + ' PREVIOUS RESULTS FOUND... ' + normal + dump_results[0] + '==='
+        print '\n===' + turquoise + ' PREVIOUS RESULTS FOUND... ' + "./{}/{}".format(module_name, dump_results[0]) + '==='
         print '\n===' + turquoise + ' LOADING RESULTS...' + normal + '==='
-        results = pickle.load(open(dump_results[0], 'rb'))
+        results = pickle.load(open("./{}/{}".format(module_name, dump_results[0]), 'rb'))
         print '\n===' + turquoise + ' LOAD IS COMPLETED!' + normal + '==='
         return results
     # Otherwise initiate feature extraction process
     else:
 
-        file_names = [f for f in listdir(".") if (isfile(join(".", f)) and ("clean_output_" in f))]
+        file_names = [f for f in listdir("./{}/".format(module_name)) if (isfile(join("./{}/".format(module_name), f)) and ("clean_output_" in f))]
 
         if file_names:  # If clean_output files exist, skip load & clean stages
             print '\n===' + turquoise + ' CLEAN DATA FOUND... ' + normal + '==='
+            file_names = ["./{}/{}".format(module_name, x) for x in file_names]
             return text_analysis_helper_parallel(file_names)  # Complete analysis
         else:
-            # Find books in root directory
-            book_names = [f for f in listdir(".") if (isfile(join(".", f)) and (".epub" in f))]
             # Otherwise load text and clean it
+            book_names = [f for f in listdir("./{}/".format(module_name)) if (isfile(join("./{}/".format(module_name), f)) and (".epub" in f))]
+            book_names = ["./{}/{}".format(module_name, x) for x in book_names]
             print '\n===' + blue + ' READ IN THE BOOK... ' + normal + book_names[0] + ' ==='
             read_in_epub(book_names[0])
             print '\n===' + blue + ' CLEAN UP THE TEXT...' + normal + '==='
@@ -451,7 +457,8 @@ def run_text_analysis_in_parallel():
                     print '\n===' + red + ' MANUAL CLEANING HAS BEEN SKIPPED... ' + normal + '==='
                     break
 
-            file_names = [f for f in listdir(".") if (isfile(join(".", f)) and ("clean_output_" in f))]
+            file_names = [f for f in listdir("./{}/".format(module_name)) if (isfile(join("./{}/".format(module_name), f)) and ("clean_output_" in f))]
+            file_names = ["./{}/{}".format(module_name, x) for x in file_names]
             return text_analysis_helper_parallel(file_names)  # Complete analysis
 
 # Test run
