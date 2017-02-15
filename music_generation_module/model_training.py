@@ -71,7 +71,7 @@ def trainModel(model, midi, epochs, start=0):
 
     available_configs = [f for f in listdir("./{}/{}/".format(module_name, output_dir)) if (isfile(join("./{}/{}/".format(module_name, output_dir), f)) and ("params" in f))]
     if available_configs:
-        print '\n===' + green + ' PREVIOUS RESULTS FOUND... ' + normal + '==='
+        print '\n===' + green + ' PREVIOUS CONFIGURATIONS FOUND... ' + normal + '==='
         available_configs = [re.findall(r'\d+', x) for x in available_configs]
         available_configs = [x for sublist in available_configs for x in sublist]
         available_configs = map(int,available_configs)
@@ -79,7 +79,7 @@ def trainModel(model, midi, epochs, start=0):
         best_conf = available_configs[-1]
 
         #"./{}/music".format(module_name)
-        print '\n===' + green + ' LOADING ' + './{}/{}/params{}.p'.format(module_name, output_dir, best_conf) + normal + '==='
+        print '\n===' + green + ' LOADING ' + './{}/{}/params{}.p '.format(module_name, output_dir, best_conf) + normal + '==='
         model.learned_config = pickle.load(open('./{}/{}/params{}.p'.format(module_name, output_dir, best_conf), 'rb'))
         print '\n===' + green + ' LOAD IS COMPLETED! STARTING TRAINING... ' + normal + '==='
 
