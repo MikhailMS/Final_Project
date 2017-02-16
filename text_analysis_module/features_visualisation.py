@@ -1,23 +1,23 @@
+# Import packages
 import pickle
 import matplotlib.pyplot as plt
 from os import listdir
 from os.path import isfile, join
 
-# Font effects for console/terminal output
-red = "\x1b[1;31m"
-turquoise = "\x1b[1;36m"
-normal = "\x1b[0m"
+# Import modules
+from utils import *
+from text_analysis import module_name
 
-
+# Main class
 def plot_features():
     # Find file that holds extracted features
-    dump_results = [f for f in listdir(".") if (isfile(join(".", f)) and ("extracted_features" in f))]
+    dump_results = [f for f in listdir("./{}/".format(module_name)) if (isfile(join("./{}/".format(module_name), f)) and ("extracted_features" in f))]
 
     # If such file exists, then load file and return features
     if dump_results:
         print '\n===' + turquoise + ' PREVIOUS RESULTS FOUND... ' + normal + dump_results[0] + '==='
         print '\n===' + turquoise + ' LOADING RESULTS...' + normal + '==='
-        results = pickle.load(open(dump_results[0], 'rb'))
+        results = pickle.load(open('./{}/{}'.format(module_name, dump_results[0]), 'rb'))
         print '\n===' + turquoise + ' LOAD IS COMPLETED!' + normal + '==='
         results = [x for sublist in results for x in sublist]  # Flat results into 1D List
 
@@ -53,6 +53,3 @@ def plot_features():
     # Otherwise
     else:
         print '\n===' + red + 'NO DATA FOUND' + normal + '==='
-
-
-plot_features()

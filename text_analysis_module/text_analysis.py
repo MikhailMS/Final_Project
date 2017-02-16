@@ -7,6 +7,8 @@ from os.path import isfile, join
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nltk import tokenize
 from operator import itemgetter
+
+# Import modules
 from utils import *
 
 # Main class

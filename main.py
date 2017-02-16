@@ -1,5 +1,5 @@
 # Import modules
-from text_analysis_module import run_text_analysis_in_parallel
+from text_analysis_module import run_text_analysis_in_parallel, plot_features
 from music_generation_module import run_music_composition
 
 # Main class
@@ -10,6 +10,7 @@ def run_application():
     """
     # Run text analysis (using multiprocessing package)
     text_features = run_text_analysis_in_parallel()
+    # plot_features() # text features visualisation
 
     # Run text feature mapping onto music parameters
 
@@ -19,5 +20,5 @@ def run_application():
 
 if __name__ == '__main__':
     #run_application() # - ONLY COMMAND TO EXIST HERE
-    run_text_analysis_in_parallel() # - FOR TEST PURPOSES
-    #run_music_composition(epochs=7500) # - FOR TEST PURPOSES
+    #run_text_analysis_in_parallel() # - FOR TEST PURPOSES
+    run_music_composition(epochs=7500) # - FOR TEST PURPOSES
