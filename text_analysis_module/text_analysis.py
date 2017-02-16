@@ -371,6 +371,11 @@ def run_text_analysis(book_name):
     returns a set of extracted features as an array
     in the form -> (sentiment, (lexical_score, readability_score))
     """
+    try:
+        nltk.download()
+    except:
+        pass
+    #nltk.data.path.append('') # Keep in comment if nltk_data resides at default location
     # Find file that holds extracted features
     dump_results = [f for f in listdir("./{}/{}".format(module_name)) if (isfile(join("./{}/{}".format(module_name), f)) and ("extracted_features" in f))]
 
@@ -418,6 +423,11 @@ def run_text_analysis_in_parallel():
     available cpu_cores and returns a set of extracted features as an array
     in the form -> (sentiment, (lexical_score, readability_score))
     """
+    try:
+        nltk.download()
+    except:
+        pass
+    #nltk.data.path.append('') # Keep in comment if nltk_data resides at default location
     # Find file that holds extracted features
     dump_results = [f for f in listdir("./{}/".format(module_name)) if (isfile(join("./{}/".format(module_name), f)) and ("extracted_features" in f))]
 

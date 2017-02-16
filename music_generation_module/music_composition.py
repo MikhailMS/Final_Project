@@ -64,4 +64,4 @@ def run_music_composition(music_length= 30, epochs=5500):
     music_composition_helper(m, pcs, music_length, name="composition") # Generate music
 
     finish = time.time() - start
-    print '\n===' + turquoise + ' Application has finished in ' + normal + str(finish) + 'seconds' + '==='
+    print '\n===' + turquoise + ' Application has finished in ' + normal + '{} seconds'.format(str(finish)) + '==='

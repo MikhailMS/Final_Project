@@ -23,7 +23,7 @@
 ## Installation procedure:
   1. Clone the repo
   2. Run `pip install -r requirements.txt`
-  3. To test **text_analysis_module**, add a book in the `.epub` format to the _**text_analysis_module**_ folder, then uncomment __run_text_analysis_in_parallel()__ part in __'main.py'__ file from root directory and run the file
+  3. To test **text_analysis_module**, add a book in the `.epub` format to the _**text_analysis_module**_ folder, then uncomment __run_text_analysis_in_parallel()__ part in __'main.py'__ file from root directory and run the file. Once nltk-downloader is activated, download 2 packages: _**brown**_, _**punkt**_ in order for nltk package to work properly.
   4. To test **music_generation_module**, create folder __'music'__ with MIDI files within **music_generation_module** directory, then uncomment __run_music_composition()__ part in __'main.py'__ file from root directory and run the file
 
 **At the moment only text_analysis_module is fully functional. music_generation_module has limited abilities, and only
