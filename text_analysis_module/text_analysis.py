@@ -316,10 +316,10 @@ def text_analysis_helper(file_names):
             text = open(file_name).read().lower()
             results.append(sliding_window(text))
 
-        print '\n===' + blue + ' RESULTS ' + normal + '==='
-
+        output_file = "extracted_features.p"
+        print '\n===' + blue + ' SAVE RESULTS TO: ' + normal + './{}/{}'.format(module_name, output_file) + '==='
         # Save results to save time on next run
-        pickle.dump(results, open("extracted_features.p", "wb"))
+        pickle.dump(results, open('./{}/{}'.format(module_name, output_file), "wb"))
 
         return results
     else:  # Otherwise
@@ -355,9 +355,9 @@ def text_analysis_helper_parallel(file_names):
         results = [x for sublist in results for x in sublist]  # Flat results into 1D List
 
         output_file = "extracted_features.p"
-        print '\n===' + blue + ' SAVE RESULTS TO: ' + normal + output_file + '==='
+        print '\n===' + blue + ' SAVE RESULTS TO: ' + normal + './{}/{}'.format(module_name, output_file) + '==='
         # Save results to save time on next run
-        pickle.dump(results, open(output_file, "wb"))
+        pickle.dump(results, open('./{}/{}'.format(module_name, output_file), "wb"))
 
         print '\n===' + blue + ' RESULTS ' + normal + '==='
         return results
@@ -470,10 +470,3 @@ def run_text_analysis_in_parallel():
             file_names = [f for f in listdir("./{}/".format(module_name)) if (isfile(join("./{}/".format(module_name), f)) and ("clean_output_" in f))]
             file_names = ["./{}/{}".format(module_name, x) for x in file_names]
             return text_analysis_helper_parallel(file_names)  # Complete analysis
-
-# Test run
-# start = time.time()
-# book_names = [f for f in listdir(".") if (isfile(join(".", f)) and (".epub" in f))]
-# features = run_text_analysis_in_parallel(book_names)
-# print features
-# print time.time() - start
