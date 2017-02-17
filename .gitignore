@@ -2,6 +2,7 @@
 !requirements.txt
 *.epub
 *.pyc
+*.p
 extracted_features.p
 extra_analysis.py
 sentiment.py
