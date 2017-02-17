@@ -18,7 +18,7 @@
   3. - [ ] Build LSTM model - **50% is complete.** _**need to include extra parameters**_
   4. - [x] Training LSTM model
   5. - [x] Music generation
-  6. - [ ] Mapping text features onto music ones
+  6. - [x] Mapping text features onto music ones
 
 ## Installation procedure:
   1. Clone the repo
