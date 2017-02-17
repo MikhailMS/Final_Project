@@ -219,10 +219,11 @@ def lexical_density_and_readability_analysis(text, allow_digits=False):
     total_meaningful_words = sum(lexical_counter.values())
     lexical_density = 100.0 * total_meaningful_words / float(total_words)
 
-    # Calculate the ARI (readability) score
-    asl = total_words / float(total_sentences)
-    alw = total_chars / float(total_words)
-    ari_score = (0.5 * asl) + (4.71 * alw) - 21.43
+    # Calculate readability score
+    asl = total_words / float(total_sentences) # average sentence length in words
+    asw = total_chars / float(total_words) # average word length in syllables
+    ari_score = (0.5 * asl) + (4.71 * asw) - 21.43 # Calculate ARI score - REDUNDANT
+    #fk_score = 206.835 - (1.015 * asl) - (84.6 * asw) # Calculate Flesch-Kincaid score
 
     print ('|####|' + yellow + ' Lexical density score... ' + normal + str(round(lexical_density, 2)) + '%')
     print ('|#####|' + yellow + ' Readability score... ' + normal + str(round(ari_score, 2)))
@@ -242,12 +243,12 @@ def sliding_window(text):
     extracted_features = []  # Stores features extracted from text piece
     text_words = []
 
-    for word in text.split():  # Get a list of all words in the teext sample
+    for word in text.split():  # Get a list of all words in the text sample
         text_words.append(word)
 
     if (len(text_words) <= window_size) or (len(text_words) - window_size <= slide_size):
         sample = ' '.join(text_words)  # Join words into set of sentence, that would be analysed
-        print '\n===' + blue + ' Analysing new sentence...' + normal + '==='
+        print '\n===' + blue + ' Analysing new text window...' + normal + '==='
         print ('\n' + green + '[+] Start sentiment analysis...' + normal)
         sentiment = sentiment_analysis(sample)
         print ('\n' + green + 'Sentiment analysis is done!' + normal)
@@ -259,7 +260,7 @@ def sliding_window(text):
     else:
         for i in xrange(0, len(text_words) - window_size, slide_size):
             sample = ' '.join(text_words[i:i + 200])
-            print '\n===' + blue + ' Analysing new sentence...' + normal + '==='
+            print '\n===' + blue + ' Analysing new text window...' + normal + '==='
             print ('\n' + green + '[+] Start sentiment analysis...' + normal)
             sentiment = sentiment_analysis(sample)
             print ('\n' + green + 'Sentiment analysis is done!' + normal)
@@ -436,9 +437,9 @@ def run_text_analysis_in_parallel():
     # If such file exists, then load file and return features
     if dump_results:
         print '\n===' + turquoise + ' PREVIOUS RESULTS FOUND... ' + "./{}/{}".format(module_name, dump_results[0]) + '==='
-        print '\n===' + turquoise + ' LOADING RESULTS...' + normal + '==='
+        print '\n===' + turquoise + ' LOADING RESULTS... ' + normal + '==='
         results = pickle.load(open("./{}/{}".format(module_name, dump_results[0]), 'rb'))
-        print '\n===' + turquoise + ' LOAD IS COMPLETED!' + normal + '==='
+        print '\n===' + turquoise + ' LOAD IS COMPLETED! ' + normal + '==='
         return results
     # Otherwise initiate feature extraction process
     else:
@@ -455,7 +456,7 @@ def run_text_analysis_in_parallel():
             book_names = ["./{}/{}".format(module_name, x) for x in book_names]
             print '\n===' + blue + ' READ IN THE BOOK... ' + normal + book_names[0] + ' ==='
             read_in_epub(book_names[0])
-            print '\n===' + blue + ' CLEAN UP THE TEXT...' + normal + '==='
+            print '\n===' + blue + ' CLEAN UP THE TEXT... ' + normal + '==='
             extract_text()
 
             # Give user a chance to manually clean output files to improve results
