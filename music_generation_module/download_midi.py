@@ -45,9 +45,6 @@ def download_midi_recursive(website, page, folder):
             except Exception, e:
                 print e.message
 
-
-
-
 # website = "http://www.midiworld.com"
 # page = "classic.htm"
 

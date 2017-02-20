@@ -233,10 +233,10 @@ def lexical_density_and_readability_analysis(text, allow_digits=False):
 
 def sliding_window(text):
     """Function slides through given text with fixed window_size and fixed
-    slide_step, applyind sentiment_analysis() and lexical_density_and_readability_analysis()
+    slide_step, applying sentiment_analysis() and lexical_density_and_readability_analysis()
     functions to every piece of text, that falls into window.
     Returns a set of data that is a representation of
-    extraxted features from given text
+    extracted features from given text
     """
     window_size = 200  # Assumably average amount of words that could be read out load per minute
     slide_size = 50  # For efficiency purpose, slid_size should be 1/4 of window_size
@@ -369,8 +369,8 @@ def text_analysis_helper_parallel(file_names):
         return None
 
 
-def run_text_analysis(book_name):
-    """Methods runs sliding_window() function over all text files and
+def run_text_analysis():
+    """Methods runs text_analysis_helper() function and
     returns a set of extracted features as an array
     in the form -> (sentiment, (lexical_score, readability_score))
     """
@@ -422,7 +422,7 @@ def run_text_analysis(book_name):
 
 
 def run_text_analysis_in_parallel():
-    """Methods runs sliding_window() function over all text files on all
+    """Methods runs text_analysis_helper() function on all
     available cpu_cores and returns a set of extracted features as an array
     in the form -> (sentiment, (lexical_score, readability_score))
     """

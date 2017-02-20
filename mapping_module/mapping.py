@@ -117,10 +117,10 @@ def map_text_parameters(group_size=5, visual=False):
     lex_score_mapped = map(map_lex_density, lex_score_median)
     read_score_mapped = map(map_readability, read_score_median)
 
-    # Save results to save time on next run
-    pickle.dump(sent_score_mapped, open('./{}/{}'.format(module_name, 'sentiment_mapped'), "wb"))
-    pickle.dump(lex_score_mapped, open('./{}/{}'.format(module_name, 'lexical_mapped'), "wb"))
-    pickle.dump(read_score_mapped, open('./{}/{}'.format(module_name, 'readability_mapped'), "wb"))
+    # Save results into files
+    pickle.dump(sent_score_mapped, open('./{}/{}'.format(module_name, 'sentiment_mapped.p'), "wb"))
+    pickle.dump(lex_score_mapped, open('./{}/{}'.format(module_name, 'lexical_mapped.p'), "wb"))
+    pickle.dump(read_score_mapped, open('./{}/{}'.format(module_name, 'readability_mapped.p'), "wb"))
 
     # Plot graphs for computed features if requested
     if visual:
