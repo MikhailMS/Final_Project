@@ -7,8 +7,8 @@ scikit-learn
 sphinx>=0.5.1
 pretty_midi
 python-midi
-pickle
 multiprocessing
+music21
 ebooklib
 bs4
 nltk

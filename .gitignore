@@ -3,6 +3,7 @@
 *.epub
 *.pyc
 *.p
+*.mid
 extracted_features.p
 extra_analysis.py
 sentiment.py

@@ -1,5 +1,5 @@
 # Import packages
-import random, re
+import os, random, re
 from os import listdir
 from os.path import isfile, join
 import cPickle as pickle
@@ -22,6 +22,7 @@ def loadMusic(dirpath):
     """Loads MIDI files into a dictionary
     Returns a dictionary of the form -> {'name': MIDI_statematrix}
     """
+    skipped = list()
     pieces = {}
 
     for fname in listdir(dirpath):
@@ -30,12 +31,26 @@ def loadMusic(dirpath):
 
         name = fname[:-4]
 
-        outMatrix = midiToNoteStateMatrix(join(dirpath, fname))
-        if len(outMatrix) < batch_len:
-            continue
+        try:
+            outMatrix = midiToNoteStateMatrix(join(dirpath, fname))
+            if len(outMatrix) < batch_len:
+                print "Skipped {}".format(fname)
+                skipped.append(fname)
+                continue
 
-        pieces[name] = outMatrix
-        print "Loaded {}".format(name)
+            pieces[name] = outMatrix
+            print "Loaded {}".format(name)
+
+        except TypeError, e:
+            print "Skipped {}".format(fname)
+            skipped.append(fname)
+
+    # Delete unused (skipped) midi files to save time on next run
+    if skipped:
+        for item in skipped:
+            os.remove('./{}/{}/{}'.format(module_name,'music',item))
+    else:
+        print 'No bad/unreadable files were found!'
 
     return pieces
 
@@ -83,7 +98,7 @@ def trainModel(model, midi, epochs, start=0):
             model.learned_config = pickle.load(open('./{}/{}/params{}.p'.format(module_name, output_dir, best_conf), 'rb'))
             print '\n===' + green + ' LOAD IS COMPLETED! STARTING TRAINING... ' + normal + '==='
 
-            for i in range(best_conf,epochs):
+            for i in range(best_conf,epochs+1):
                 if stopflag[0]:
                     break
                 error = model.update_fun(*getMidiBatch(midi))
@@ -100,7 +115,7 @@ def trainModel(model, midi, epochs, start=0):
     else:
         print '\n===' + red + ' NO PREVIOUS CONFIGURATIONS FOUND. ' + normal + '==='
         print '\n===' + green + ' STARTING TRAINING FROM SCRATCH... ' + normal + '==='
-        for i in range(start,start+epochs):
+        for i in range(start,start+epochs+1):
             if stopflag[0]:
                 break
             error = model.update_fun(*getMidiBatch(midi))
