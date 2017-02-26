@@ -70,136 +70,104 @@ def shift_key():
             print 'Minors: {}'.format(halfSteps)
 
         elif '{} {}'.format(key.tonic.name,key.mode) == "C# major":
-            halfSteps = a_tonic[key.tonic.name]
+            halfSteps = a_s_tonic[key.tonic.name]
             print 'Minors: {}'.format(halfSteps)
 
         elif '{} {}'.format(key.tonic.name,key.mode) == "D- major":
-            halfSteps = a_tonic[key.tonic.name]
+            halfSteps = b_f_tonic[key.tonic.name]
             print 'Minors: {}'.format(halfSteps)
 
         elif '{} {}'.format(key.tonic.name,key.mode) == "D major":
-            halfSteps = a_tonic[key.tonic.name]
-            print 'Minors: {}'.format(halfSteps)
-
-        elif '{} {}'.format(key.tonic.name,key.mode) == "D# major":
-            halfSteps = a_tonic[key.tonic.name]
+            halfSteps = b_tonic[key.tonic.name]
             print 'Minors: {}'.format(halfSteps)
 
         elif '{} {}'.format(key.tonic.name,key.mode) == "E- major":
-            halfSteps = a_tonic[key.tonic.name]
+            halfSteps = c_tonic[key.tonic.name]
             print 'Minors: {}'.format(halfSteps)
 
         elif '{} {}'.format(key.tonic.name,key.mode) == "E major":
-            halfSteps = a_tonic[key.tonic.name]
+            halfSteps = c_s_tonic[key.tonic.name]
             print 'Minors: {}'.format(halfSteps)
 
         elif '{} {}'.format(key.tonic.name,key.mode) == "F major":
-            halfSteps = a_tonic[key.tonic.name]
+            halfSteps = d_tonic[key.tonic.name]
             print 'Minors: {}'.format(halfSteps)
 
         elif '{} {}'.format(key.tonic.name,key.mode) == "F# major":
-            halfSteps = a_tonic[key.tonic.name]
-            print 'Minors: {}'.format(halfSteps)
-
-        elif '{} {}'.format(key.tonic.name,key.mode) == "G- major":
-            halfSteps = a_tonic[key.tonic.name]
+            halfSteps = d_s_tonic[key.tonic.name]
             print 'Minors: {}'.format(halfSteps)
 
         elif '{} {}'.format(key.tonic.name,key.mode) == "G major":
-            halfSteps = a_tonic[key.tonic.name]
-            print 'Minors: {}'.format(halfSteps)
-
-        elif '{} {}'.format(key.tonic.name,key.mode) == "G# major":
-            halfSteps = a_tonic[key.tonic.name]
+            halfSteps = e_tonic[key.tonic.name]
             print 'Minors: {}'.format(halfSteps)
 
         elif '{} {}'.format(key.tonic.name,key.mode) == "A- major":
-            halfSteps = a_tonic[key.tonic.name]
+            halfSteps = f_tonic[key.tonic.name]
             print 'Minors: {}'.format(halfSteps)
 
         elif '{} {}'.format(key.tonic.name,key.mode) == "A major":
-            halfSteps = a_tonic[key.tonic.name]
-            print 'Minors: {}'.format(halfSteps)
-
-        elif '{} {}'.format(key.tonic.name,key.mode) == "A# major":
-            halfSteps = a_tonic[key.tonic.name]
+            halfSteps = f_s_tonic[key.tonic.name]
             print 'Minors: {}'.format(halfSteps)
 
         elif '{} {}'.format(key.tonic.name,key.mode) == "B- major":
-            halfSteps = a_tonic[key.tonic.name]
+            halfSteps = g_tonic[key.tonic.name]
             print 'Minors: {}'.format(halfSteps)
 
         elif '{} {}'.format(key.tonic.name,key.mode) == "B major":
-            halfSteps = a_tonic[key.tonic.name]
+            halfSteps = g_s_tonic[key.tonic.name]
             print 'Minors: {}'.format(halfSteps)
 
         # Check if should be done minor -> major shift
         elif '{} {}'.format(key.tonic.name,key.mode) == "C minor":
-            halfSteps = a_tonic[key.tonic.name]
+            halfSteps = e_f_tonic[key.tonic.name]
             print 'Majors: {}'.format(halfSteps)
 
         elif '{} {}'.format(key.tonic.name,key.mode) == "C# minor":
-            halfSteps = a_tonic[key.tonic.name]
-            print 'Majors: {}'.format(halfSteps)
-
-        elif '{} {}'.format(key.tonic.name,key.mode) == "D- minor":
-            halfSteps = a_tonic[key.tonic.name]
+            halfSteps = e_tonic[key.tonic.name]
             print 'Majors: {}'.format(halfSteps)
 
         elif '{} {}'.format(key.tonic.name,key.mode) == "D minor":
-            halfSteps = a_tonic[key.tonic.name]
+            halfSteps = f_tonic[key.tonic.name]
             print 'Majors: {}'.format(halfSteps)
 
         elif '{} {}'.format(key.tonic.name,key.mode) == "D# minor":
-            halfSteps = a_tonic[key.tonic.name]
-            print 'Majors: {}'.format(halfSteps)
-
-        elif '{} {}'.format(key.tonic.name,key.mode) == "E- minor":
-            halfSteps = a_tonic[key.tonic.name]
+            halfSteps = f_s_tonic[key.tonic.name]
             print 'Majors: {}'.format(halfSteps)
 
         elif '{} {}'.format(key.tonic.name,key.mode) == "E minor":
-            halfSteps = a_tonic[key.tonic.name]
+            halfSteps = g_tonic[key.tonic.name]
             print 'Majors: {}'.format(halfSteps)
 
         elif '{} {}'.format(key.tonic.name,key.mode) == "F minor":
-            halfSteps = a_tonic[key.tonic.name]
+            halfSteps = a_f_tonic[key.tonic.name]
             print 'Majors: {}'.format(halfSteps)
 
         elif '{} {}'.format(key.tonic.name,key.mode) == "F# minor":
             halfSteps = a_tonic[key.tonic.name]
             print 'Majors: {}'.format(halfSteps)
 
-        elif '{} {}'.format(key.tonic.name,key.mode) == "G- minor":
-            halfSteps = a_tonic[key.tonic.name]
-            print 'Majors: {}'.format(halfSteps)
-
         elif '{} {}'.format(key.tonic.name,key.mode) == "G minor":
-            halfSteps = a_tonic[key.tonic.name]
+            halfSteps = b_f_tonic[key.tonic.name]
             print 'Majors: {}'.format(halfSteps)
 
         elif '{} {}'.format(key.tonic.name,key.mode) == "G# minor":
-            halfSteps = a_tonic[key.tonic.name]
-            print 'Majors: {}'.format(halfSteps)
-
-        elif '{} {}'.format(key.tonic.name,key.mode) == "A- minor":
-            halfSteps = a_tonic[key.tonic.name]
+            halfSteps = b_tonic[key.tonic.name]
             print 'Majors: {}'.format(halfSteps)
 
         elif '{} {}'.format(key.tonic.name,key.mode) == "A minor":
-            halfSteps = a_tonic[key.tonic.name]
+            halfSteps = c_tonic[key.tonic.name]
             print 'Majors: {}'.format(halfSteps)
 
         elif '{} {}'.format(key.tonic.name,key.mode) == "A# minor":
-            halfSteps = a_tonic[key.tonic.name]
+            halfSteps = c_s_tonic[key.tonic.name]
             print 'Majors: {}'.format(halfSteps)
 
         elif '{} {}'.format(key.tonic.name,key.mode) == "B- minor":
-            halfSteps = a_tonic[key.tonic.name]
+            halfSteps = d_f_tonic[key.tonic.name]
             print 'Majors: {}'.format(halfSteps)
 
         elif '{} {}'.format(key.tonic.name,key.mode) == "B minor":
-            halfSteps = a_tonic[key.tonic.name]
+            halfSteps = d_tonic[key.tonic.name]
             print 'Majors: {}'.format(halfSteps)
 
         newscore = score.transpose(halfSteps)
