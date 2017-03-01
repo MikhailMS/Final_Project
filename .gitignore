@@ -13,3 +13,4 @@ test.py
 git_push.sh
 music_generation_module/music/*
 music_generation_module/output/*
+download_music/music/*
