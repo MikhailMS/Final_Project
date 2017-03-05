@@ -1,15 +1,14 @@
 # Import packages
 import os, random, re
-from os import listdir
-from os.path import isfile, join
 import cPickle as pickle
 import signal
+from os import listdir
+from os.path import isfile, join
 
 # Import modules
 from midi_to_statematrix import *
 from model_data import *
 from utils import *
-
 
 # Main class
 batch_width = 12 # number of sequences in a batch
@@ -22,7 +21,6 @@ def loadMusic(dirpath):
     """Loads MIDI files into a dictionary
     Returns a dictionary of the form -> {'name': MIDI_statematrix}
     """
-    skipped = list()
     pieces = {}
 
     for fname in listdir(dirpath):
@@ -35,23 +33,15 @@ def loadMusic(dirpath):
             outMatrix = midiToNoteStateMatrix(join(dirpath, fname))
             if len(outMatrix) < batch_len:
                 print "Skipped {}".format(fname)
-                skipped.append(fname)
                 continue
 
             pieces[name] = outMatrix
             print "Loaded {}".format(name)
 
         except TypeError, e:
-            print "Skipped {}".format(fname)
-            skipped.append(fname)
+            print "Skipped due {} error {}".format(e, fname)
 
-    # Delete unused (skipped) midi files to save time on next run
-    if skipped:
-        for item in skipped:
-            os.remove('./{}/{}/{}'.format(module_name,'music',item))
-    else:
-        print 'No bad/unreadable files were found!'
-
+    print 'Application loaded {} music files for training'.format(len(pieces))
     return pieces
 
 def getMidiSegment(midi):
@@ -104,6 +94,7 @@ def trainModel(model, midi, epochs, start=0):
                 error = model.update_fun(*getMidiBatch(midi))
                 if i % 100 == 0:
                     print '\n[+]' + yellow + " Epoch {}, error={} ".format(i,error) + normal + '==='
+                    pickle.dump(model.learned_config,open('./{}/{}/params{}.p'.format(module_name, output_dir, i), 'wb'))
                 if i % 500 == 0 or (i % 100 == 0 and i < 1000):
                     xIpt, xOpt = map(numpy.array, getMidiSegment(midi))
                     noteStateMatrixToMidi(numpy.concatenate((numpy.expand_dims(xOpt[0], 0), model.predict_fun(batch_len, 1, xIpt[0])), axis=0),'./{}/{}/sample{}'.format(module_name, output_dir, i))
@@ -121,6 +112,7 @@ def trainModel(model, midi, epochs, start=0):
             error = model.update_fun(*getMidiBatch(midi))
             if i % 100 == 0:
                 print '\n[+]' + yellow + " Epoch {}, error={} ".format(i,error) + normal + '==='
+                pickle.dump(model.learned_config,open('./{}/{}/params{}.p'.format(module_name, output_dir, i), 'wb'))
             if i % 500 == 0 or (i % 100 == 0 and i < 1000):
                 xIpt, xOpt = map(numpy.array, getMidiSegment(midi))
                 noteStateMatrixToMidi(numpy.concatenate((numpy.expand_dims(xOpt[0], 0), model.predict_fun(batch_len, 1, xIpt[0])), axis=0),'./{}/{}/sample{}'.format(module_name, output_dir, i))

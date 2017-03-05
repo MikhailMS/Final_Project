@@ -1,5 +1,6 @@
 # Import packages
 import itertools
+import numpy as np
 
 # Import modules
 from midi_to_statematrix import upperBound, lowerBound
@@ -16,7 +17,7 @@ def getOrDefault(datalist, index, default):
 
 def buildContext(state):
     """Returns a list of notes that a played at the given state:
-    0 - not played, 1 - played
+    0 - not played, other values - played
     """
     context = [0]*12
     for note, notestate in enumerate(state):
@@ -45,7 +46,7 @@ def noteInputForm(note, state, context, beat):
     part_prev_vicinity = list(itertools.chain.from_iterable((getOrDefault(state, note+i, [0,0]) for i in range(-12, 13))))
     part_context = context[pitchclass:] + context[:pitchclass] # Why we change a context order here?
 
-    return part_position + part_pitchclass + part_prev_vicinity + part_context + beat + [0] # Why we need [0] here?
+    return part_position + part_pitchclass + part_prev_vicinity + part_context + beat + [0] # Adds up into 80
 
 def noteStateSingleToInputForm(state,time):
     """Converts state from statematrix into input form (data list),

@@ -98,7 +98,7 @@ class Model(object):
         Definition - **Number of recurrent layers (suitable for storing information for long
         periods of time**
         """
-        self.t_input_size = 80
+        self.t_input_size = 80 # Assumably this value should be increased to get hold of extra params
 
         # Time network maps from notewise input size to various hidden sizes
         self.time_model = StackedCells(self.t_input_size, celltype=LSTM, layers = t_layer_sizes)
