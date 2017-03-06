@@ -78,13 +78,14 @@ def music_key_helper(folders):
         for folder in folders:
             print '[+]' + green + ' Analysing {} files '.format(folder) + normal + '[+]'
             available_files = [f for f in listdir("./{}/{}/{}".format(module_name, music_dir, folder)) if (isfile(join("./{}/{}/{}".format(module_name, music_dir, folder), f)) and (".mid" in f))]
-            """for music in available_files:
+            for music in available_files:
                 name = music[:-4]
                 score = music21.converter.parse("./{}/{}/{}/{}".format(module_name, music_dir, folder, music))
                 key = score.analyze('key')
                 print '{} is in {} key'.format(music, key.mode)
-                keys[name] = 1 if key.mode=='major' else 0"""
-            results.update({music[:-4]: (1 if music21.converter.parse("./{}/{}/{}/{}".format(module_name, music_dir, folder, music)).analyze('key').mode=='major' else 0) for music in available_files})
+                results[name] = 1 if key.mode=='major' else 0
+                results.update({name: 1 if key.mode=='major' else 0})
+            #results.update({music[:-4]: (1 if music21.converter.parse("./{}/{}/{}/{}".format(module_name, music_dir, folder, music)).analyze('key').mode=='major' else 0) for music in available_files})
             print '[!!]' + green + ' Saving results to ./{}/{}/keys_{}.p '.format(module_name, music_dir, folder) + normal + '[!!]'
             pickle.dump(results,open('./{}/{}/keys_{}.p'.format(module_name, music_dir, folder), 'wb'))
     else:
@@ -97,7 +98,7 @@ def load_music_key():
     keys_saved = [f for f in listdir("./{}/{}/".format(module_name, music_dir)) if ("keys_" in f)]
 
     for key in keys_saved:
-        results.update(pickle.load(open('./{}/{}/{}.p'.format(module_name, music_dir, key), 'rb')))
+        results.update(pickle.load(open('./{}/{}/{}'.format(module_name, music_dir, key), 'rb')))
 
     return results
 
@@ -115,23 +116,23 @@ def get_music_key_dict():
         for item in folders_been_analysed:
             folders_to_analyse.remove(item)
 
-        if len(music_folders)==len(folders_to_analyse):
-            print '[+]' + green + ' All data has been analysed. Loading results... '.format(folders_to_analyse[0]) + normal + '[+]\n'
+        if len(music_folders)==len(folders_been_analysed):
+            print '[+]' + green + ' All data has been analysed. Loading results... ' + normal + '[+]\n'
         else:
             print '[+]' + green + ' Previous results found. Analysing from stop point... {} '.format(folders_to_analyse[0]) + normal + '[+]\n'
             music_key_helper(folders_to_analyse)
 
     else:
-        print '[+]' + green + ' No previous results found. Starting from beggining... ' + normal + '[+]'
+        print '[+]' + green + ' No previous results found. Starting from beggining... ' + normal + '[+]\n'
         music_key_helper(music_folders)
-        print '[+]' + green + ' Getting results ready... ' + normal + '[+]'
+        print '[+]' + green + ' Getting results ready... ' + normal + '[+]\n'
 
     return load_music_key()
 
 def music_analysis():
     """Main function that calls helper functions to perform music analysis"""
-    #clean_music()
-    complexity = get_music_key_dict()
-    #keys = get_music_key_dict()
+    clean_music()
+    complexity = get_complexity_dict()
+    keys = get_music_key_dict()
 
-    return complexity
+    return complexity, keys
