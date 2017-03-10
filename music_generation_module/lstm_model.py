@@ -94,11 +94,10 @@ class Model(object):
         # self.extra_layer_sizes = extra_layer_sizes
 
         """From architecture definition, size of the notewise input
-        Maybe worth changing to 88 (to include all piano notes)
         Definition - **Number of recurrent layers (suitable for storing information for long
         periods of time**
         """
-        self.t_input_size = 80 # Assumably this value should be increased to get hold of extra params
+        self.t_input_size = 81 # This value should be increased to get hold of extra params
 
         # Time network maps from notewise input size to various hidden sizes
         self.time_model = StackedCells(self.t_input_size, celltype=LSTM, layers = t_layer_sizes)

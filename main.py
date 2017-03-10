@@ -19,7 +19,7 @@ def run_application():
     #complexity_scores, keys = music_analysis()
 
     # Run music generation
-    #run_music_composition(epochs=7500) # - FOR TEST PURPOSES
+    run_music_composition(epochs=6500) # - FOR TEST PURPOSES
 
 
 

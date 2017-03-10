@@ -46,7 +46,7 @@ def noteInputForm(note, state, context, beat):
     part_prev_vicinity = list(itertools.chain.from_iterable((getOrDefault(state, note+i, [0,0]) for i in range(-12, 13))))
     part_context = context[pitchclass:] + context[:pitchclass] # Why we change a context order here?
 
-    return part_position + part_pitchclass + part_prev_vicinity + part_context + beat + [0] # Adds up into 80
+    return part_position + part_pitchclass + part_prev_vicinity + part_context + beat + [1] + [3] # Adds up into 81
 
 def noteStateSingleToInputForm(state,time):
     """Converts state from statematrix into input form (data list),

@@ -74,7 +74,7 @@ def map_readability(entry):
 
 def map_lex_density(entry):
     """Takes a data entry of lexical density scores and produces a value:
-    from 1 to 4, where 1 - low density and 7 - greatest. Output value is used for music composition"""
+    from 1 to 4, where 1 - low density and 4 - greatest. Output value is used for music composition"""
     if entry>=75:
         return 4
     if entry>=50:
