@@ -4,6 +4,7 @@ import midi, numpy
 # Main class
 lowerBound = 24
 upperBound = 102
+velocity_scale = 127.0
 
 def midiToNoteStateMatrix(midifile):
     """Converts given MIDI file to state matrix (model readable form)
@@ -12,7 +13,6 @@ def midiToNoteStateMatrix(midifile):
     pattern = midi.read_midifile(midifile)
 
     timeleft = [track[0].tick for track in pattern]
-
     posns = [0 for track in pattern]
 
     statematrix = []
@@ -36,18 +36,21 @@ def midiToNoteStateMatrix(midifile):
                 evt = track[pos]
                 if isinstance(evt, midi.NoteEvent):
                     if (evt.pitch < lowerBound) or (evt.pitch >= upperBound):
+                        #print "Note {} at time {} out of bounds (ignoring)".format(evt.pitch, time)
                         pass
-                        # print "Note {} at time {} out of bounds (ignoring)".format(evt.pitch, time)
                     else:
                         if isinstance(evt, midi.NoteOffEvent) or evt.velocity == 0:
                             state[evt.pitch-lowerBound] = [0, 0]
                         else:
-                            state[evt.pitch-lowerBound] = [1, 1]
+                            scaled = evt.velocity/velocity_scale
+                            state[evt.pitch-lowerBound] = [1, scaled]
                 elif isinstance(evt, midi.TimeSignatureEvent):
+                    """Need to test if this bit makes output better or worse"""
                     if evt.numerator not in (2, 4):
                         # Don't need to worry about non-4 time signatures
                         # print "Found time signature event {}. Escape!".format(evt)
-                        return statematrix
+                        #return statematrix
+                        pass
 
                 try:
                     timeleft[i] = track[pos + 1].tick
@@ -82,22 +85,25 @@ def noteStateMatrixToMidi(statematrix, name="result"):
     for time, state in enumerate(statematrix + [prevstate[:]]):
         offNotes = []
         onNotes = []
+        velocity = []
         for i in range(span):
             n = state[i]
             p = prevstate[i]
             if p[0] == 1:
                 if n[0] == 0:
                     offNotes.append(i)
-                elif n[1] == 1:
+                elif n[1] > 1:
                     offNotes.append(i)
                     onNotes.append(i)
+                    velocity.append(n[1])
             elif n[0] == 1:
                 onNotes.append(i)
+                velocity.append(n[1])
         for note in offNotes:
             track.append(midi.NoteOffEvent(tick=(time-lastcmdtime)*tickscale, pitch=note+lowerBound))
             lastcmdtime = time
-        for note in onNotes:
-            track.append(midi.NoteOnEvent(tick=(time-lastcmdtime)*tickscale, velocity=40, pitch=note+lowerBound))
+        for iter,note in enumerate(onNotes):
+            track.append(midi.NoteOnEvent(tick=(time-lastcmdtime)*tickscale, velocity=int(velocity[iter]*velocity_scale), pitch=note+lowerBound))
             lastcmdtime = time
 
         prevstate = state

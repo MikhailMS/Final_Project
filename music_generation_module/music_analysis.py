@@ -16,12 +16,14 @@ from utils import *
 module_name = 'music_generation_module'
 music_dir = 'music'
 
-def clean_music():
-    """Function deletes files that cannot be used in training"""
+def clean_n_load_music():
+    """Function deletes files that cannot be used in training and
+    returns a dictionary of the form -> {'name': MIDI_statematrix}
+    """
     skipped = dict()
     pieces = {}
 
-    music_folders = [f for f in listdir("./{}/{}/".format(module_name, music_dir)) if ("level" in f)]
+    music_folders = [f for f in listdir("./{}/{}/".format(module_name, music_dir)) if not(isfile(join("./{}/{}/{}".format(module_name, music_dir, folder), f))) and ("level" in f)]
 
     for folder in music_folders:
         available_files = [f for f in listdir("./{}/{}/{}".format(module_name, music_dir, folder)) if (isfile(join("./{}/{}/{}".format(module_name, music_dir, folder), f)) and (".mid" in f))]
@@ -36,6 +38,7 @@ def clean_music():
                     continue
 
                 pieces[name] = outMatrix
+                print "Loaded {}".format(name)
             except TypeError, e:
                 print "Error: {} skipped {}".format(e, music)
                 skipped[music] = folder
@@ -50,6 +53,7 @@ def clean_music():
         pass
 
     print 'Application can load {} music files for training'.format(len(pieces))
+    return pieces
 
 def get_complexity_dict():
     """Returns a dictionary of complexity of music pieces
@@ -57,7 +61,7 @@ def get_complexity_dict():
     value - complexity score
     """
     complexity_scores = dict()
-    music_folders = [f for f in listdir("./{}/{}/".format(module_name, music_dir)) if ("level" in f)]
+    music_folders = [f for f in listdir("./{}/{}/".format(module_name, music_dir)) if not(isfile(join("./{}/{}/{}".format(module_name, music_dir, folder), f))) and ("level" in f)]
 
     if music_folders:
         for iter,folder in enumerate(music_folders):
@@ -95,7 +99,7 @@ def music_key_helper(folders):
 def load_music_key():
     """Once all keys are available, load them into one dict and return it"""
     results = dict()
-    keys_saved = [f for f in listdir("./{}/{}/".format(module_name, music_dir)) if ("keys_" in f)]
+    keys_saved = [f for f in listdir("./{}/{}/".format(module_name, music_dir)) if isfile(join("./{}/{}".format(module_name, music_dir), f)) and ("keys_" in f)]
 
     for key in keys_saved:
         results.update(pickle.load(open('./{}/{}/{}'.format(module_name, music_dir, key), 'rb')))
@@ -131,8 +135,13 @@ def get_music_key_dict():
 
 def music_analysis():
     """Main function that calls helper functions to perform music analysis"""
-    clean_music()
+    print '\n===' + turquoise + ' MIDI files are being cleaned & loaded... ' + normal + '==='
+    pcs = clean_n_load_music()
+
+    print '\n===' + turquoise + ' Getting complexity scores for MIDI files... ' + normal + '==='
     complexity = get_complexity_dict()
+
+    print '\n===' + turquoise + ' Getting keys for MIDI files... ' + normal + '==='
     keys = get_music_key_dict()
 
-    return complexity, keys
+    return pcs, complexity, keys

@@ -32,33 +32,38 @@ def buildBeat(time):
     """
     return [2*x-1 for x in [time%2, (time//2)%2, (time//4)%2, (time//8)%2]]
 
-def noteInputForm(note, state, context, beat):
+def noteInputForm(note, state, context, beat, complexity_score, key_score):
     """Converts given state into input form (data list),
     that is used to train model
     """
-    position = note
+    position = note # Redundant
     part_position = [position]
 
-    pitchclass = (note + lowerBound) % 12
-    part_pitchclass = [int(i == pitchclass) for i in range(12)]
+    pitchclass = (note + lowerBound) % 12 # Identify pitch class (range [0,11])
+    part_pitchclass = [int(i == pitchclass) for i in range(12)] # Builds an array of length 12, where index represent pitch class
 
     # Concatenate the note states for the previous vicinity
     part_prev_vicinity = list(itertools.chain.from_iterable((getOrDefault(state, note+i, [0,0]) for i in range(-12, 13))))
     part_context = context[pitchclass:] + context[:pitchclass] # Why we change a context order here?
 
-    return part_position + part_pitchclass + part_prev_vicinity + part_context + beat + [1] + [3] # Adds up into 81
+    # Bring complexity_score and key_score to similar form (list)
+    part_complexity = [complexity_score]
+    part_key = [key_score]
 
-def noteStateSingleToInputForm(state,time):
+    return part_position + part_pitchclass + part_prev_vicinity + part_context + beat + part_key + part_complexity # Adds up into 81
+
+def noteStateSingleToInputForm(state, time, complexity_score, key_score):
     """Converts state from statematrix into input form (data list),
     that is used to train model
     """
     beat = buildBeat(time)
     context = buildContext(state)
-    return [noteInputForm(note, state, context, beat) for note in range(len(state))]
+    #print 'Time step: {}, state length: {}, beat: {}, context: {}\n\t'.format(time, len(state), beat, context)
+    return [noteInputForm(note, state, context, beat, complexity_score, key_score) for note in range(len(state))]
 
-def noteStateMatrixToInputForm(statematrix):
+def noteStateMatrixToInputForm(statematrix, complexity_score=0, key_score=0):
     """Converts statematrix(representation of MIDI file) into list of data
     that is used to train model. Returns a list of input forms (data list)
     """
-    input_form = [ noteStateSingleToInputForm(state,time) for time,state in enumerate(statematrix) ]
+    input_form = [ noteStateSingleToInputForm(state,time, complexity_score, key_score) for time,state in enumerate(statematrix) ]
     return input_form
