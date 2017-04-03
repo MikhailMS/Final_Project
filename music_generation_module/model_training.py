@@ -17,36 +17,35 @@ division_len = 16 # interval between possible start locations
 module_name = 'music_generation_module'
 output_dir = 'output'
 
-def get_dict_key(di, value):
-    """Returns a key that corresponds to the given value"""
-    return di.keys()[di.values().index(value)]
-
-def getMidiSegment(midi, complexity, keys):
+def getMidiSegment(midi):
     """Gets random midi file from the dictionary of loaded files,
     initialises random starting point, then retrieves complexity score and tonic of randomly chosen midi file
     and after that returns 2 segments: input and output.
     """
     piece_output = random.choice(midi.values())
 
-    name_key = get_dict_key(midi, piece_output) # Find a name of the music that has randomly chosen value
-    compl_score = complexity.get(name_key) # Retrieve the complexity of according music piece
-    key_score = keys.get(name_key) # Retrieve the tonic of according music piece
+    while (len(piece_output[0])-batch_len)<=0: # Make sure that randrange won't throw an error
+        piece_output = random.choice(midi.values())
 
-    start = random.randrange(0,len(piece_output)-batch_len,division_len)
-    # print "Range is {} {} {} -> {}".format(0,len(piece_output)-batch_len,division_len, start)
+    compl_score = piece_output[1] # Retrieve the complexity of according music piece
+    key_score = piece_output[2] # Retrieve the tonic of according music piece
 
-    seg_out = piece_output[start:start+batch_len]
+    start = random.randrange(0,len(piece_output[0])-batch_len,division_len)
+
+    print "Range is {} {} {} -> {}".format(0,len(piece_output)-batch_len,division_len, start)
+
+    seg_out = piece_output[0][start:start+batch_len]
     seg_in = noteStateMatrixToInputForm(seg_out, compl_score, key_score)
 
     return seg_in, seg_out
 
-def getMidiBatch(midi, complexity, keys):
+def getMidiBatch(midi):
     """Returns input and output arrays, where each contains specific number of
     sequences (batch_width)"""
-    inp,out = zip(*[getMidiSegment(midi, complexity, keys) for _ in range(batch_width)])
+    inp,out = zip(*[getMidiSegment(midi) for _ in range(batch_width)])
     return numpy.array(inp), numpy.array(out)
 
-def trainModel(model, midi, complexity, keys, epochs, start=0):
+def trainModel(model, midi, epochs, start=0):
     """Trains LSTM model on loaded midi files at given number of epochs
     Saves model configuration into file (.p) along with respective generated music (.mid)
     for that configuration.
@@ -73,13 +72,13 @@ def trainModel(model, midi, complexity, keys, epochs, start=0):
             for i in range(best_conf,epochs+1):
                 if stopflag[0]:
                     break
-                error = model.update_fun(*getMidiBatch(midi, complexity, keys))
+                error = model.update_fun(*getMidiBatch(midi))
+                print '\n[+]' + yellow + " Epoch {}, error={} ".format(i,error) + normal + '==='
                 if i % 100 == 0:
-                    print '\n[+]' + yellow + " Epoch {}, error={} ".format(i,error) + normal + '==='
                     pickle.dump(model.learned_config,open('./{}/{}/params{}.p'.format(module_name, output_dir, i), 'wb'))
                 if i % 500 == 0 or (i % 100 == 0 and i < 1000):
-                    xIpt, xOpt = map(numpy.array, getMidiSegment(midi, complexity, keys))
-                    noteStateMatrixToMidi(numpy.concatenate((numpy.expand_dims(xOpt[0], 0), model.predict_fun(batch_len, 1, xIpt[0])), axis=0),'./{}/{}/sample{}'.format(module_name, output_dir, i))
+                    xIpt, xOpt = map(numpy.array, getMidiSegment(midi))
+                    #noteStateMatrixToMidi(numpy.concatenate((numpy.expand_dims(xOpt[0], 0), model.predict_fun(batch_len, 1, xIpt[0])), axis=0),'./{}/{}/sample{}'.format(module_name, output_dir, i))
                     pickle.dump(model.learned_config,open('./{}/{}/params{}.p'.format(module_name, output_dir, i), 'wb'))
             signal.signal(signal.SIGINT, old_handler)
         else:
@@ -91,12 +90,12 @@ def trainModel(model, midi, complexity, keys, epochs, start=0):
         for i in range(start,start+epochs+1):
             if stopflag[0]:
                 break
-            error = model.update_fun(*getMidiBatch(midi, complexity, keys))
+            error = model.update_fun(*getMidiBatch(midi))
+            print '\n[+]' + yellow + " Epoch {}, error={} ".format(i,error) + normal + '==='
             if i % 100 == 0:
-                print '\n[+]' + yellow + " Epoch {}, error={} ".format(i,error) + normal + '==='
                 pickle.dump(model.learned_config,open('./{}/{}/params{}.p'.format(module_name, output_dir, i), 'wb'))
             if i % 500 == 0 or (i % 100 == 0 and i < 1000):
-                xIpt, xOpt = map(numpy.array, getMidiSegment(midi, complexity, keys))
-                noteStateMatrixToMidi(numpy.concatenate((numpy.expand_dims(xOpt[0], 0), model.predict_fun(batch_len, 1, xIpt[0])), axis=0),'./{}/{}/sample{}'.format(module_name, output_dir, i))
+                xIpt, xOpt = map(numpy.array, getMidiSegment(midi))
+                #noteStateMatrixToMidi(numpy.concatenate((numpy.expand_dims(xOpt[0], 0), model.predict_fun(batch_len, 1, xIpt[0])), axis=0),'./{}/{}/sample{}'.format(module_name, output_dir, i))
                 pickle.dump(model.learned_config,open('./{}/{}/params{}.p'.format(module_name, output_dir, i), 'wb'))
         signal.signal(signal.SIGINT, old_handler)

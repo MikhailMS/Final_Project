@@ -1,5 +1,6 @@
 # Import packages
 import time
+
 # Import modules
 from text_analysis_module import run_text_analysis_in_parallel, plot_features
 from music_generation_module import run_music_composition, music_analysis
@@ -9,8 +10,8 @@ from utils import *
 # Main class
 def run_application():
     """Main function that runs whole application:
-    Starting with text analysis -> train LSTM model ->
-    Use text features to generate music
+    Starting with text analysis -> music analysis -> train LSTM model ->
+    use text features to generate music
     """
     # Run text analysis (using multiprocessing package)
     #run_text_analysis_in_parallel()
@@ -19,10 +20,11 @@ def run_application():
     #sent_score, lex_score, read_score = map_text_parameters()
 
     # Run music analysis
-    pcs, complexity_scores, keys = music_analysis()
-
+    pcs = music_analysis()
+    
     # Run music generation
-    run_music_composition(pcs, complexity_scores, keys, epochs=6500) # - FOR TEST PURPOSES
+    run_music_composition(pcs, epochs=6500) # - FOR TEST PURPOSES
+    pcs.close()
 
 
 

@@ -11,7 +11,6 @@ def midiToNoteStateMatrix(midifile):
     and return the latter
     """
     pattern = midi.read_midifile(midifile)
-
     timeleft = [track[0].tick for track in pattern]
     posns = [0 for track in pattern]
 
@@ -43,14 +42,14 @@ def midiToNoteStateMatrix(midifile):
                             state[evt.pitch-lowerBound] = [0, 0]
                         else:
                             scaled = evt.velocity/velocity_scale
-                            state[evt.pitch-lowerBound] = [1, scaled]
+                            state[evt.pitch-lowerBound] = [1, 1]
                 elif isinstance(evt, midi.TimeSignatureEvent):
                     """Need to test if this bit makes output better or worse"""
                     if evt.numerator not in (2, 4):
                         # Don't need to worry about non-4 time signatures
                         # print "Found time signature event {}. Escape!".format(evt)
-                        #return statematrix
-                        pass
+                        return statematrix
+                        #pass
 
                 try:
                     timeleft[i] = track[pos + 1].tick
@@ -103,7 +102,8 @@ def noteStateMatrixToMidi(statematrix, name="result"):
             track.append(midi.NoteOffEvent(tick=(time-lastcmdtime)*tickscale, pitch=note+lowerBound))
             lastcmdtime = time
         for iter,note in enumerate(onNotes):
-            track.append(midi.NoteOnEvent(tick=(time-lastcmdtime)*tickscale, velocity=int(velocity[iter]*velocity_scale), pitch=note+lowerBound))
+            vel = int(velocity[iter]*velocity_scale)
+            track.append(midi.NoteOnEvent(tick=(time-lastcmdtime)*tickscale, velocity=60, pitch=note+lowerBound))
             lastcmdtime = time
 
         prevstate = state

@@ -1,6 +1,7 @@
 # Import packages
 import itertools
 import numpy as np
+from random import randint
 
 # Import modules
 from midi_to_statematrix import upperBound, lowerBound
@@ -36,9 +37,10 @@ def noteInputForm(note, state, context, beat, complexity_score, key_score):
     """Converts given state into input form (data list),
     that is used to train model
     """
-    position = note # Redundant
+    position = note
     part_position = [position]
 
+    #print 'Complexity: {}, key: {}'.format(complexity_score, key_score)
     pitchclass = (note + lowerBound) % 12 # Identify pitch class (range [0,11])
     part_pitchclass = [int(i == pitchclass) for i in range(12)] # Builds an array of length 12, where index represent pitch class
 
@@ -52,18 +54,27 @@ def noteInputForm(note, state, context, beat, complexity_score, key_score):
 
     return part_position + part_pitchclass + part_prev_vicinity + part_context + beat + part_key + part_complexity # Adds up into 81
 
-def noteStateSingleToInputForm(state, time, complexity_score, key_score):
+def noteStateSingleToInputForm(state, time):
     """Converts state from statematrix into input form (data list),
     that is used to train model
     """
-    beat = buildBeat(time)
-    context = buildContext(state)
-    #print 'Time step: {}, state length: {}, beat: {}, context: {}\n\t'.format(time, len(state), beat, context)
-    return [noteInputForm(note, state, context, beat, complexity_score, key_score) for note in range(len(state))]
+    #print 'noteStateSingleToInputForm len(state): {}'.format(len(state))
+    if len(state)<=(upperBound - lowerBound):
+        beat = buildBeat(time)
+        context = buildContext(state)
+        key = randint(0,1)
+        complexity = randint(1, 2)
+        #print 'Time step: {}, state length: {}, beat: {}, context: {}\n\t'.format(time, len(state), beat, context)
+        return [noteInputForm(note, state, context, beat, complexity, key) for note in range(len(state))]
+    else:
+        beat = buildBeat(time)
+        context = buildContext(state[:-2])
+        #print 'Time step: {}, state length: {}, beat: {}, context: {}\n\t'.format(time, len(state), beat, context)
+        return [noteInputForm(note, state[:-2], context, beat, state[-2], state[-1]) for note in range(len(state[:-2]))]
 
 def noteStateMatrixToInputForm(statematrix, complexity_score=0, key_score=0):
     """Converts statematrix(representation of MIDI file) into list of data
     that is used to train model. Returns a list of input forms (data list)
     """
-    input_form = [ noteStateSingleToInputForm(state,time, complexity_score, key_score) for time,state in enumerate(statematrix) ]
+    input_form = [ noteStateSingleToInputForm(state+[complexity_score]+[key_score], time) for time,state in enumerate(statematrix) ]
     return input_form

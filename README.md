@@ -16,7 +16,7 @@
   1. - [x] Music input
   2. - [x] Music analysis
   3. - [x] Build LSTM model
-  4. - [ ] Training LSTM model - **in progress** : need to pass extra parameters (received from music analysis function) to training stage
+  4. - [x] Training LSTM model
   5. - [ ] Music generation - **in progress** : need to pass extra parameters (received from mapping function) to generation step
   6. - [x] Mapping text features onto music ones
 

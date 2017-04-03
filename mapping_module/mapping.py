@@ -54,18 +54,16 @@ def map_sentiment(entry):
 
 def map_readability(entry):
     """Takes a data entry of readability scores and produces a value:
-    from 1 to 7, where 1 - low complexity and 7 - greatest. Output value is used for music composition"""
+    from 1 to 6, where 1 - low complexity and 6 - greatest. Output value is used for music composition"""
     if entry>=13:
-        return 7
-    if entry>=11:
         return 6
-    if entry>=9:
+    if entry>=11:
         return 5
-    if entry>=7:
+    if entry>=9:
         return 4
-    if entry>=5:
+    if entry>=7:
         return 3
-    if entry>=3:
+    if entry>=4:
         return 2
     if entry>=1:
         return 1

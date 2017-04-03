@@ -1,6 +1,7 @@
 # Import packages
 import os, random, re, time
 import cPickle as pickle
+import shelve
 import signal
 import music21
 from os import listdir
@@ -16,44 +17,69 @@ from utils import *
 module_name = 'music_generation_module'
 music_dir = 'music'
 
-def clean_n_load_music():
+def process_music():
     """Function deletes files that cannot be used in training and
     returns a dictionary of the form -> {'name': MIDI_statematrix}
     """
-    skipped = dict()
-    pieces = {}
+    saved_result = [f for f in listdir("./{}/{}/".format(module_name, music_dir)) if (isfile(join("./{}/{}/".format(module_name, music_dir), f)) and ("music_trans" in f))]
 
-    music_folders = [f for f in listdir("./{}/{}/".format(module_name, music_dir)) if not(isfile(join("./{}/{}/{}".format(module_name, music_dir, folder), f))) and ("level" in f)]
-
-    for folder in music_folders:
-        available_files = [f for f in listdir("./{}/{}/{}".format(module_name, music_dir, folder)) if (isfile(join("./{}/{}/{}".format(module_name, music_dir, folder), f)) and (".mid" in f))]
-        for music in available_files:
-
-            name = music[:-4]
-            try:
-                outMatrix = midiToNoteStateMatrix(join("./{}/{}/{}".format(module_name, music_dir, folder), music))
-                if len(outMatrix) < batch_len:
-                    print "Skipped {}".format(music)
-                    skipped[music] = folder
-                    continue
-
-                pieces[name] = outMatrix
-                print "Loaded {}".format(name)
-            except TypeError, e:
-                print "Error: {} skipped {}".format(e, music)
-                skipped[music] = folder
-
-    if skipped:
-        for k,v in skipped.iteritems():
-            try:
-                os.remove('./{}/{}/{}/{}'.format(module_name, music_dir, v, k))
-            except OSError, e:
-                print '{} could not be deleted by script: {}'.format(item, e)
+    if saved_result:
+        print '[+]' + green + ' All music files has been analysed. Loading results... ' + normal + '[+]\n'
     else:
-        pass
+        print '[+]' + green + ' No previous results found. Starting from the beginning... ' + normal + '[+]\n'
+        skipped = dict()
+        pieces = shelve.open('./{}/{}/music_trans'.format(module_name, music_dir))
 
-    print 'Application can load {} music files for training'.format(len(pieces))
-    return pieces
+        music_folders = [f for f in listdir("./{}/{}/".format(module_name, music_dir)) if not(isfile(join("./{}/{}/".format(module_name, music_dir), f))) and ("level" in f)]
+
+        for iter,folder in enumerate(music_folders):
+            available_files = [f for f in listdir("./{}/{}/{}".format(module_name, music_dir, folder)) if (isfile(join("./{}/{}/{}".format(module_name, music_dir, folder), f)) and (".mid" in f))]
+
+            for music in available_files:
+
+                name = music[:-4]
+                try:
+                    outMatrix = midiToNoteStateMatrix(join("./{}/{}/{}".format(module_name, music_dir, folder), music))
+                    if len(outMatrix) <= batch_len:
+                        print "Skipped {}".format(music)
+                        skipped[music] = folder
+                        continue
+
+                    complexity_score = iter+1
+
+                    score = music21.converter.parse("./{}/{}/{}/{}".format(module_name, music_dir, folder, music))
+                    key = score.analyze('key')
+                    key_score = 1 if key.mode=='major' else 0
+
+                    pieces[name] = [outMatrix, complexity_score, key_score]
+                    print "Loaded {}: {}_{} and has complexity {}".format(name, key.mode, key_score, complexity_score)
+                except TypeError, e:
+                    print "Error: {} skipped {}".format(e, music)
+                    skipped[music] = folder
+
+        if skipped:
+            for k,v in skipped.iteritems():
+                try:
+                    os.remove('./{}/{}/{}/{}'.format(module_name, music_dir, v, k))
+                except OSError, e:
+                    print '{} could not be deleted by script: {}'.format(item, e)
+        else:
+            pass
+
+        print '\n===' + turquoise + ' {} MIDI files has been processed & saved... '.format(len(pieces)) + normal + '===\n'
+        pieces.close()
+
+def load_trans_music():
+    """Once all music has been converted into statematrix form,
+    load them into one dict and return it
+    """
+    results = dict()
+    trans_music = [f for f in listdir("./{}/{}/".format(module_name, music_dir)) if isfile(join("./{}/{}".format(module_name, music_dir), f)) and ("music_" in f)]
+
+    for music in trans_music:
+        results.update(pickle.load(open('./{}/{}/{}'.format(module_name, music_dir, music), 'rb')))
+
+    return results
 
 def get_complexity_dict():
     """Returns a dictionary of complexity of music pieces
@@ -61,7 +87,7 @@ def get_complexity_dict():
     value - complexity score
     """
     complexity_scores = dict()
-    music_folders = [f for f in listdir("./{}/{}/".format(module_name, music_dir)) if not(isfile(join("./{}/{}/{}".format(module_name, music_dir, folder), f))) and ("level" in f)]
+    music_folders = [f for f in listdir("./{}/{}/".format(module_name, music_dir)) if not(isfile(join("./{}/{}/".format(module_name, music_dir), f))) and ("level" in f)]
 
     if music_folders:
         for iter,folder in enumerate(music_folders):
@@ -127,21 +153,22 @@ def get_music_key_dict():
             music_key_helper(folders_to_analyse)
 
     else:
-        print '[+]' + green + ' No previous results found. Starting from beggining... ' + normal + '[+]\n'
+        print '[+]' + green + ' No previous results found. Starting from beginning... ' + normal + '[+]\n'
         music_key_helper(music_folders)
         print '[+]' + green + ' Getting results ready... ' + normal + '[+]\n'
 
-    return load_music_key()
-
 def music_analysis():
     """Main function that calls helper functions to perform music analysis"""
-    print '\n===' + turquoise + ' MIDI files are being cleaned & loaded... ' + normal + '==='
-    pcs = clean_n_load_music()
 
-    print '\n===' + turquoise + ' Getting complexity scores for MIDI files... ' + normal + '==='
-    complexity = get_complexity_dict()
+    print '\n===' + turquoise + ' MIDI files are being cleaned & transformed... ' + normal + '===\n'
+    process_music()
 
-    print '\n===' + turquoise + ' Getting keys for MIDI files... ' + normal + '==='
-    keys = get_music_key_dict()
+    #print '\n===' + turquoise + ' Getting complexity scores for MIDI files... ' + normal + '===\n'
+    #complexity = get_complexity_dict()
 
-    return pcs, complexity, keys
+    #print '\n===' + turquoise + ' Getting keys for MIDI files... ' + normal + '===\n'
+    #get_music_key_dict()
+
+    pcs = shelve.open('./{}/{}/music_trans'.format(module_name, music_dir))
+    #keys = load_music_key()
+    return pcs
