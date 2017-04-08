@@ -23,6 +23,7 @@ setup(
         'bs4',
         'nltk',
         'textblob',
-        'textstat'
+        'textstat',
+        'unittest2'
     ]
 )

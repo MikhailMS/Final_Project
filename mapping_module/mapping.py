@@ -46,11 +46,11 @@ def split_list(data_list, N):
 
 def map_sentiment(entry):
     """Takes a data entry of sentiment scores and produces a value:
-    1 - for positive, -1 -  for negative. Output value is used for music composition"""
+    1 - for positive, 0 -  for negative. Output value is used for music composition"""
     if entry>0:
         return 1
     else:
-        return -1
+        return 0
 
 def map_readability(entry):
     """Takes a data entry of readability scores and produces a value:

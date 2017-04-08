@@ -430,7 +430,7 @@ def run_text_analysis_in_parallel():
         nltk.download()
     except:
         pass
-    #nltk.data.path.append('') # Keep in comment if nltk_data resides at default location
+    nltk.data.path.append('/data/aca14mm/nltk_data') # Keep in comment if nltk_data resides at default location
     # Find file that holds extracted features
     dump_results = [f for f in listdir("./{}/".format(module_name)) if (isfile(join("./{}/".format(module_name), f)) and ("extracted_features" in f))]
 
