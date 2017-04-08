@@ -17,7 +17,7 @@
    - [x] Music analysis
    - [x] Build LSTM model
    - [x] Training LSTM model
-   - [ ] Music generation - **in progress** : need to pass extra parameters (received from mapping function) to generation step
+   - [x] Music generation
    - [ ] Mapping text features onto music ones - **in progress** : need to find what could be controlled by lexical density
 
 ## Installation procedure:
@@ -28,6 +28,12 @@
 
 **At the moment only text_analysis_module is fully functional. music_generation_module has limited abilities, and only
 able to compose music depending on time stamps and notes. Module is still on development stage.**
+
+## Current Results:
+  1. At `epochs = 6500`, application produces music with *63%* correctness. Meaning, that tonic key and complexity has been correctly generated in *63 cases out of 100*.
+  2. At the moment I have two ideas that must be checked:
+    1. Increase number of epochs to see if it outputs better results
+    2. Leave number of epochs same, but increase number of training samples (at the moment only *698 out of 1400* files are used)
 
 ## **_NOTE_**:
 Application has been created under _**macOS Sierra 10.12 and Python 2.7.10**_.
