@@ -12,13 +12,13 @@
    - [x] Readability analysis - possibly worth adding variety of formulas
    - [x] Sliding window feature - moves through text rather then giving a score to the whole text
 
-2. - [ ] **Music generation module**:
+2. - [x] **Music generation module**:
    - [x] Music input
    - [x] Music analysis
    - [x] Build LSTM model
    - [x] Training LSTM model
    - [x] Music generation
-   - [ ] Mapping text features onto music ones - **in progress** : need to find what could be controlled by lexical density
+   - [x] Mapping text features onto music ones
 
 ## Installation procedure:
   1. Clone the repo
