@@ -7,12 +7,9 @@ from midi_to_statematrix import *
 import model_training
 import lstm_model
 from utils import *
+from constants import *
 
 # Main class
-module_name = 'music_generation_module'
-output_dir = 'output'
-results_dir = 'results'
-
 def music_composition_helper(m, pcs, times=20, keep_thoughts=False, name="final"):
     """Function composes music according to trained LSTM models
     and stores them into 'output' folder
@@ -70,6 +67,22 @@ def music_composition_helper_final(m, pcs, times, sent_score_mapped, lex_score_m
             all_outputs.append(resdata[-1])
         noteStateMatrixToMidi(numpy.array(all_outputs), name='./{}/{}/{}'.format(module_name, results_dir, i), velocity=lex_score_mapped[i]*0.25)
 
+    # Here goes tempo change
+    available_files = [f for f in listdir("./{}/{}".format(module_name, results_dir)) if (isfile(join("./{}/{}".format(module_name, results_dir), f)) and (".mid" in f))]
+    tempo_scale_factor = 1.5 # Initial tempo slowed by half (120bpm down to 60bpm)
+
+    for iter,music in enumerate(available_files):
+        score = music21.converter.parse("./{}/{}/{}".format(module_name, results_dir, music))
+        if lex_score_mapped[iter] is 1:
+            scale = 0
+        else:
+            scale = lex_score_mapped[iter]*0.25
+        new_tempo = tempo_scale_factor-scale # If smaller than 1, then speed up, otherwise slow down
+        print 'Changing tempo in {} from {} to {}'.format(music, tempo_scale_factor, new_tempo)
+        newscore = score.scaleOffsets(new_tempo).scaleDurations(new_tempo)
+        newscore.write('midi', 'final_{}'.format(music))
+
+
 def run_music_composition(pcs, sent_score_mapped, lex_score_mapped, read_score_mapped, music_length= 30, epochs=5500):
     start = time.time()
 
@@ -86,8 +99,6 @@ def run_music_composition(pcs, sent_score_mapped, lex_score_mapped, read_score_m
     except:
         print '\n===' + red + ' {} folder already exists '.format(results_dir) + normal + '==='
         pass
-    #print '\n===' + turquoise + ' MIDI files are being loaded... ' + normal + '==='
-    #pcs = model_training.loadMusic("./{}/music".format(module_name)) # Load all available MIDI files
 
     print '\n===' + turquoise + ' LSTM model is being created... ' + normal + '==='
     m = lstm_model.Model([300,300],[100,50], dropout=0.5) # Create LSTM model
