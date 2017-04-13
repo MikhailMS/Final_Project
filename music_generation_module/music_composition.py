@@ -68,7 +68,7 @@ def music_composition_helper_final(m, pcs, times, sent_score_mapped, lex_score_m
             else:
                 cons += (1 - cons)*0.3
             all_outputs.append(resdata[-1])
-        noteStateMatrixToMidi(numpy.array(all_outputs),'./{}/{}/{}'.format(module_name, results_dir, i))
+        noteStateMatrixToMidi(numpy.array(all_outputs),'./{}/{}/{}'.format(module_name, results_dir, i), velocity=lex_score_mapped[i]*0.25)
 
 def run_music_composition(pcs, sent_score_mapped, lex_score_mapped, read_score_mapped, music_length= 30, epochs=5500):
     start = time.time()
