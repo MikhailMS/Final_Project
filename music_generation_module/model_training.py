@@ -13,7 +13,7 @@ from model_data import *
 from utils import *
 
 # Main class
-batch_width = 12 # number of sequences in a batch
+batch_width = 16 # number of sequences in a batch
 batch_len = 16*8 # length of each sequence
 division_len = 16 # interval between possible start locations
 module_name = 'music_generation_module'
@@ -173,6 +173,7 @@ def trainModel(model, midi, epochs, start=0):
             signal.signal(signal.SIGINT, old_handler)
         else:
             print '\n===' + red + ' BEST FOUND CONFIGURATION ({}) IS FINAL. EXITING... '.format(best_conf) + normal + '==='
+            model.learned_config = pickle.load(open('./{}/{}/params{}.p'.format(module_name, output_dir, best_conf), 'rb'))
             signal.signal(signal.SIGINT, old_handler)
     else:
         print '\n===' + red + ' NO PREVIOUS CONFIGURATIONS FOUND. ' + normal + '==='

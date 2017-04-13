@@ -35,7 +35,7 @@ def music_composition_helper(m, pcs, times=20, keep_thoughts=False, name="final"
     	all_outputs.append(resdata[-1])
     	if keep_thoughts:
     		all_thoughts.append(resdata)
-    noteStateMatrixToMidi(numpy.array(all_outputs),'./{}/{}/{}'.format(module_name, output_dir, name))
+    noteStateMatrixToMidi(numpy.array(all_outputs), name='./{}/{}/{}'.format(module_name, output_dir, name))
     if keep_thoughts:
     	pickle.dump(all_thoughts, open('./{}/{}/{}.p'.format(module_name, output_dir, name),'wb'))
 
@@ -68,7 +68,7 @@ def music_composition_helper_final(m, pcs, times, sent_score_mapped, lex_score_m
             else:
                 cons += (1 - cons)*0.3
             all_outputs.append(resdata[-1])
-        noteStateMatrixToMidi(numpy.array(all_outputs),'./{}/{}/{}'.format(module_name, results_dir, i), velocity=lex_score_mapped[i]*0.25)
+        noteStateMatrixToMidi(numpy.array(all_outputs), name='./{}/{}/{}'.format(module_name, results_dir, i), velocity=lex_score_mapped[i]*0.25)
 
 def run_music_composition(pcs, sent_score_mapped, lex_score_mapped, read_score_mapped, music_length= 30, epochs=5500):
     start = time.time()
@@ -96,8 +96,8 @@ def run_music_composition(pcs, sent_score_mapped, lex_score_mapped, read_score_m
     model_training.trainModel(m, pcs, epochs) # Train LSTM model
 
     # Save LSTM model configuration
-    print '\n===' + turquoise + ' LSTM model is being saved... ' + normal + '==='
-    pickle.dump( m.learned_config, open( "./{}/{}/final_learned_config.p".format(module_name, output_dir), "wb" ) )
+    #print '\n===' + turquoise + ' LSTM model is being saved... ' + normal + '==='
+    #pickle.dump( m.learned_config, open( "./{}/{}/final_learned_config.p".format(module_name, output_dir), "wb" ) )
 
     print '\n===' + turquoise + ' Music for final LSTM configuration is being generated... ' + normal + '==='
     music_composition_helper(m, pcs, name="composition") # Generate music
@@ -106,4 +106,4 @@ def run_music_composition(pcs, sent_score_mapped, lex_score_mapped, read_score_m
     music_composition_helper_final(m, pcs, music_length, sent_score_mapped, lex_score_mapped, read_score_mapped) # Generate music
 
     finish = time.time() - start
-    print '\n===' + turquoise + ' Application has finished in ' + normal + '{} seconds'.format(str(finish)) + '==='
+    print '\n===' + turquoise + ' Music composition has finished in ' + normal + '{} seconds'.format(str(finish)) + '==='

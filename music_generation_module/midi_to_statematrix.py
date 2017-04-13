@@ -65,11 +65,12 @@ def midiToNoteStateMatrix(midifile):
 
     return statematrix
 
-def noteStateMatrixToMidi(statematrix, velocity=1, name="result"):
+def noteStateMatrixToMidi(statematrix, name="result",  velocity=0.5):
     """Converts given state matrix to MIDI file
     and return the latter, so it could be passed to software to play it out
     """
     vel = velocity
+    print 'Velocity multiplier: {}'.format(vel)
     statematrix = numpy.asarray(statematrix) # Make sure we work with an array
     pattern = midi.Pattern()
     track = midi.Track()
@@ -98,7 +99,7 @@ def noteStateMatrixToMidi(statematrix, velocity=1, name="result"):
             track.append(midi.NoteOffEvent(tick=(time-lastcmdtime)*tickscale, pitch=note+lowerBound))
             lastcmdtime = time
         for note in onNotes:
-            track.append(midi.NoteOnEvent(tick=(time-lastcmdtime)*tickscale, velocity=int(63.5*vel), pitch=note+lowerBound))
+            track.append(midi.NoteOnEvent(tick=(time-lastcmdtime)*tickscale, velocity=int(126*vel), pitch=note+lowerBound))
             lastcmdtime = time
 
         prevstate = state

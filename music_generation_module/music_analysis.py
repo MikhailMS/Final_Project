@@ -11,11 +11,9 @@ from midi_to_statematrix import *
 from model_training import batch_len
 from model_data import *
 from utils import *
+from constants import *
 
 # Main class
-module_name = 'music_generation_module'
-music_dir = 'music'
-
 def process_music():
     """Function deletes files that cannot be used in training to reduce running time on next try"""
     skipped = dict()
@@ -62,23 +60,37 @@ def process_music():
 
 def music_key_helper(folders):
     """Helper subfunction for get_music_key_dict() function, to follow DRY paradigm"""
-    results = dict()
+    skipped = dict()
     if folders:
         for folder in folders:
+            results = dict()
             print '[+]' + green + ' Analysing {} files '.format(folder) + normal + '[+]'
             available_files = [f for f in listdir("./{}/{}/{}".format(module_name, music_dir, folder)) if (isfile(join("./{}/{}/{}".format(module_name, music_dir, folder), f)) and (".mid" in f))]
             for music in available_files:
                 name = music[:-4]
-                score = music21.converter.parse("./{}/{}/{}/{}".format(module_name, music_dir, folder, music))
-                key = score.analyze('key')
-                print '{} is in {} key'.format(music, key.mode)
-                results[name] = 1 if key.mode=='major' else 0
-                #results.update({name: 1 if key.mode=='major' else 0})
-            #results.update({music[:-4]: (1 if music21.converter.parse("./{}/{}/{}/{}".format(module_name, music_dir, folder, music)).analyze('key').mode=='major' else 0) for music in available_files})
+                try:
+                    score = music21.converter.parse("./{}/{}/{}/{}".format(module_name, music_dir, folder, music))
+                    key = score.analyze('key')
+                    print '{} is in {} key'.format(music, key.mode)
+                    results[name] = 1 if key.mode=='major' else 0
+
+                except:
+                    print "Unexpected error, {} was skipped".format(music)
+                    skipped[music] = folder
+
             print '[!!]' + green + ' Saving results to ./{}/{}/keys_{}.p '.format(module_name, music_dir, folder) + normal + '[!!]'
             pickle.dump(results,open('./{}/{}/keys_{}.p'.format(module_name, music_dir, folder), 'wb'))
     else:
         print '[!!]'+ red + 'No subfolders found!' + normal + '[!!]'
+
+    if skipped:
+        for k,v in skipped.iteritems():
+            try:
+                os.remove('./{}/{}/{}/{}'.format(module_name, music_dir, v, k))
+            except OSError, e:
+                print '{} could not be deleted by script: {}'.format(item, e)
+    else:
+        pass
     print '[+]' + green + ' Key analysis is completed ' + normal + '[+]'
 
 def load_music_key():
@@ -92,7 +104,7 @@ def load_music_key():
     return results
 
 def get_music_key_dict():
-    """Returns a dictionary of music piece's key
+    """Computes a dictionary of music piece's key
     key - music name,
     value - key (0 - minor, 1 - major)
     """
@@ -118,7 +130,8 @@ def get_music_key_dict():
 
 def music_analysis():
     """Main function that calls helper functions to perform music analysis"""
-    get_music_key_dict() # Takes ages to complete
+    # Tonic key identification. Takes ages to complete, so after first run it saves resutls
+    get_music_key_dict()
     pcs = process_music()
 
     return pcs
