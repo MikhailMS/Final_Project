@@ -11,7 +11,7 @@ def run_application():
     It is advised to keep group_size and music_length parameters of same value
     """
     # Run text analysis (using multiprocessing package)
-    #run_text_analysis_in_parallel()
+    run_text_analysis_in_parallel()
 
     # Run text feature mapping onto music parameters
     sent_score, lex_score, read_score = map_text_parameters(group_size=5)
