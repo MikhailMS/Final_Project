@@ -11,66 +11,9 @@ from os.path import isfile, join
 from midi_to_statematrix import *
 from model_data import *
 from utils import *
+from constants import *
 
 # Main class
-batch_width = 16 # number of sequences in a batch
-batch_len = 16*8 # length of each sequence
-division_len = 16 # interval between possible start locations
-module_name = 'music_generation_module'
-output_dir = 'output'
-music_dir = 'music'
-
-def loadMusic(dirpath):
-    """Function deletes files that cannot be used in training to reduce running time on next try"""
-
-    saved_result = [f for f in listdir("./{}/{}/".format(module_name, music_dir)) if (isfile(join("./{}/{}/".format(module_name, music_dir), f)) and ("music_trans" in f))]
-
-    if saved_result:
-        print '[+]' + green + ' All music files has been analysed. Loading results... ' + normal + '[+]\n'
-        with open("./{}/{}/{}".format(module_name, music_dir, saved_result[0]), 'rb') as handle:
-            pieces = pickle.load(handle)
-    else:
-        skipped = dict()
-        pieces = {}
-
-        music_folders = [f for f in listdir("./{}/{}/".format(module_name, music_dir)) if ("level" in f)]
-
-        for iter, folder in enumerate(music_folders):
-            available_files = [f for f in listdir("./{}/{}/{}".format(module_name, music_dir, folder)) if (isfile(join("./{}/{}/{}".format(module_name, music_dir, folder), f)) and (".mid" in f))]
-            for music in available_files:
-
-                name = music[:-4]
-                try:
-                    outMatrix = midiToNoteStateMatrix(join("./{}/{}/{}".format(module_name, music_dir, folder), music))
-                    if len(outMatrix) <= batch_len:
-                        print "Skipped {}".format(music)
-                        skipped[music] = folder
-                        continue
-
-                    complexity_score = iter+1
-
-                    #score = music21.converter.parse("./{}/{}/{}/{}".format(module_name, music_dir, folder, music))
-                    #key = score.analyze('key')
-                    #key_score = 1 if key.mode=='major' else 0
-                    outMatrix.append(complexity_score)
-                    pieces[name] = outMatrix
-                    print "Loaded {}:  has complexity {} and length: {}. Current size {} bytes".format(name, complexity_score, len(outMatrix), sys.getsizeof(pieces))
-                except TypeError, e:
-                    print "Error: {} skipped {}".format(e, music)
-                    skipped[music] = folder
-
-        if skipped:
-            for k,v in skipped.iteritems():
-                try:
-                    os.remove('./{}/{}/{}/{}'.format(module_name, music_dir, v, k))
-                except OSError, e:
-                    print '{} could not be deleted by script: {}'.format(item, e)
-        else:
-            pass
-
-    print 'Application can load {} music files for training. Size of {} bytes'.format(len(pieces), sys.getsizeof(pieces))
-    return pieces
-
 def getMidiSegment(midi):
     """Gets random midi file from the dictionary of loaded files,
     initialises random starting point and then returns 2 segments:

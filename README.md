@@ -38,6 +38,15 @@
   4. Best result so far is _**70%**_ correctly assigned tonic key.
 
 ## **_NOTE_**:
+Following files fall under the LICENSE.txt agreement:
+  1. lstm_model.py
+  2. midi_to_statematrix.py
+  3. model_data.py
+  4. model_training.py
+  5. music_composition.py
+  6. output_to_input.py
+Changes in the code were made in order to adapt the code for the purpose of my project, however, initial idea is an intellectual property of _Daniel Johnson_
+
 Application has been created under _**macOS Sierra 10.12 and Python 2.7.10**_ and thus has not been tested under other OS.
 
 If getting **DEPRECATION: Uninstalling a distutils installed project (six) has
