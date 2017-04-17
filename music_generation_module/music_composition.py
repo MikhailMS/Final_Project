@@ -1,9 +1,12 @@
 # Import packages
 import cPickle as pickle
+import music21
 import time, gzip, numpy, os
-from midi_to_statematrix import *
+from os import listdir
+from os.path import isfile, join
 
 # Import modules
+from midi_to_statematrix import *
 import model_training
 import lstm_model
 from utils import *
@@ -71,17 +74,13 @@ def music_composition_helper_final(m, pcs, times, sent_score_mapped, lex_score_m
     available_files = [f for f in listdir("./{}/{}".format(module_name, results_dir)) if (isfile(join("./{}/{}".format(module_name, results_dir), f)) and (".mid" in f))]
     tempo_scale_factor = 1.5 # Initial tempo slowed by half (120bpm down to 60bpm)
 
-    for iter,music in enumerate(available_files):
+    for iter, music in enumerate(available_files):
         score = music21.converter.parse("./{}/{}/{}".format(module_name, results_dir, music))
-        if lex_score_mapped[iter] is 1:
-            scale = 0
-        else:
-            scale = lex_score_mapped[iter]*0.25
+        scale = lex_score_mapped[iter]*0.25
         new_tempo = tempo_scale_factor-scale # If smaller than 1, then speed up, otherwise slow down
         print 'Changing tempo in {} from {} to {}'.format(music, tempo_scale_factor, new_tempo)
         newscore = score.scaleOffsets(new_tempo).scaleDurations(new_tempo)
-        newscore.write('midi', 'final_{}'.format(music))
-
+        newscore.write('midi', './{}/{}/final_{}'.format(module_name, results_dir, music))
 
 def run_music_composition(pcs, sent_score_mapped, lex_score_mapped, read_score_mapped, music_length= 30, epochs=5500):
     start = time.time()

@@ -83,21 +83,17 @@ def ensure_list(result):
 
 class Model(object):
 
-    def __init__(self, t_layer_sizes, p_layer_sizes, extra_layer_sizes=None, dropout=0):
+    def __init__(self, t_layer_sizes, p_layer_sizes, dropout=0):
 
         # Initialise number of layers (neural network layers)
         self.t_layer_sizes = t_layer_sizes # time_model layers
         self.p_layer_sizes = p_layer_sizes # pitch_model layers
-        """extra_layer_sizes represents a layers to handle
-        extra features (music key, complexity, notes density(notes/segment) )
-        """
-        # self.extra_layer_sizes = extra_layer_sizes
 
         """From architecture definition, size of the notewise input
         Definition - **Number of recurrent layers (suitable for storing information for long
         periods of time**
         """
-        self.t_input_size = 81 # This value should be increased to get hold of extra params
+        self.t_input_size = 81 # This value should be equal to 81
 
         # Time network maps from notewise input size to various hidden sizes
         self.time_model = StackedCells(self.t_input_size, celltype=LSTM, layers = t_layer_sizes)
@@ -110,13 +106,6 @@ class Model(object):
         p_input_size = t_layer_sizes[-1] + 2
         self.pitch_model = StackedCells(p_input_size, celltype=LSTM, layers = p_layer_sizes)
         self.pitch_model.layers.append(Layer(p_layer_sizes[-1], 2, activation = T.nnet.sigmoid))
-
-        """Assumably here I need to place model/models that would take care
-        of extra features, such as: key, complexity, note density"""
-        # self.extra_input_size = 3
-        # self.extra_model = StackedCells(self.extra_input_size, celltype=LSTM, layers=extra_layer_sizes)
-        # Add output layer to extra_model
-        # self.extra_model.layers.append(PassthroughLayer())
 
         self.dropout = dropout
 
@@ -190,15 +179,6 @@ class Model(object):
             new_states = self.pitch_model.forward(in_data, prev_hiddens=hiddens, dropout=masks)
             return new_states
 
-        def step_extra(in_data, *other):
-            """Returns new state of extra_model [NEED FIXING]"""
-            other = list(other)
-            split = -len(self.extra_layer_sizes) if self.dropout else len(other)
-            hiddens = other[:split]
-            masks = [None] + other[split:] if self.dropout else []
-            new_states = self.extra_model.forward(in_data, prev_hiddens=hiddens, dropout=masks)
-            return new_states
-
         """=================== STAGE 0 - data preparation ==================="""
         """We generate an output for each input, so it doesn't make sense to use the last output as an input.
         Important note: assumption is made, that the sentinel start value is already present
@@ -209,18 +189,6 @@ class Model(object):
         # time_inputs is a matrix (time, batch/note, input_per_note)
         time_inputs = input_slice.transpose((1,0,2,3)).reshape((n_time,n_batch*n_note,n_ipn))
         num_time_parallel = time_inputs.shape[1]
-
-        """If we apply above changes [161-163, 166-168] we need to make different input_slice
-        input_slice = self.input_mat[0][:,0:-1]
-        n_batch, n_time, n_note, n_ipn = input_slice.shape
-        # time_inputs is a matrix (time, batch/note, input_per_note)
-        time_inputs = input_slice.transpose((1,0,2,3)).reshape((n_time,n_batch*n_note,n_ipn))
-        num_time_parallel = time_inputs.shape[1]
-
-        input_slice = self.input_mat[1][:,0:-1]
-        n_sent, n_lex, n_read, n_ipn = input_slice.shape
-        Make similar num_time_parallel as above
-        """
 
         """====================== STAGE 1 - time_model ======================"""
         # Apply dropout to time_model
@@ -270,16 +238,10 @@ class Model(object):
         Transpose to be (batch, time, note, onOrArticProb)
         """
         note_final = get_last_layer(note_result).reshape((n_note,n_batch,n_time,2)).transpose(1,2,0,3)
-        # In order to pass this results to STAGE 3, we need to follow similar pattern to STAGE 1
-        # However, it may not be needed, and STAGE 3 would require data directly from STAGE 1
-
-        """===================== STAGE 3 - extra_model ======================"""
-        # Apply dropout to extra_model
-        # Then carry on as for STAGE 2
 
         """=================== Finish train(update stage) ==================="""
         """The cost of the entire procedure is the negative log likelihood of the events all happening.
-        For the purposes of training, if the ouputted probability is P, then the likelihood of seeing a 1 is P, and
+        For the purposes of training, if the output probability is P, then the likelihood of seeing a 1 is P, and
         the likelihood of seeing 0 is (1-P). So the likelihood is (1-P)(1-x) + Px = 2Px - P - x + 1
         Since they are all binary decisions, and are all probabilities given all previous decisions, we can just
         multiply the likelihoods, or, since we are logging them, add the logs.
@@ -334,12 +296,6 @@ class Model(object):
         chosen = T.cast(T.stack(shouldPlay, shouldArtic), "int8")
 
         return ensure_list(new_states) + [chosen]
-
-    def _predict_step_extra(self, in_data_from_time, *states):
-        """If extra data should be predicted, then this function should be
-        created in the same manner as _predict_step_note()
-        Takes data and layers's states and returns new states + chosen extra params
-        """
 
     def setup_predict(self):
         """In prediction mode, note steps are contained in the time steps.
@@ -432,8 +388,6 @@ class Model(object):
 
         # Now notes_result is a list of matrix [layer/output](notes, onOrArtic)
         notes_result, updates = theano.scan(fn=self._predict_step_note, sequences=[time_final], outputs_info=note_outputs_info)
-        """Similar should be done for extra params
-        extra_results, updates = theano.scan(fn=self._predict_step_extra, sequences=[time_final], outputs_info=extra_outputs_info)"""
 
         output = get_last_layer(notes_result)
         next_input = OutputFormToInputFormOp()(output, self.walk_time + 1)

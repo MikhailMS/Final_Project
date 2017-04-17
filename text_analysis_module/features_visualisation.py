@@ -1,8 +1,8 @@
 # Import packages
 import pickle
-import matplotlib.pyplot as plt
 from os import listdir
 from os.path import isfile, join
+import matplotlib.pyplot as plt
 
 # Import modules
 from utils import *
@@ -39,26 +39,36 @@ def plot_features(sent_score=None, lex_score=None, read_score=None, label=''):
     readability scores"""
 
     # Find file that holds extracted features
-    dump_results = [f for f in listdir("./{}/".format(module_name)) if (isfile(join("./{}/".format(module_name), f)) and ("extracted_features" in f))]
+    dump_results = [
+        f for f in listdir("./{}/".format(module_name))
+        if (isfile(join("./{}/".format(module_name), f)) and
+            ("extracted_features" in f))
+    ]
 
     # If data was passed to function then use it, otherwise
-    if (sent_score is not None) and (lex_score is not None) and (read_score is not None):
-        length = len(sent_score) # It doesn't matter which list's length to take
+    if (sent_score is not None) and (lex_score is not None) and (
+            read_score is not None):
+        length = len(
+            sent_score)  # It doesn't matter which list's length to take
         plot_graphs(sent_score, lex_score, read_score, length, label)
 
     # If file with extracted features exists, then load file and plot features
     elif dump_results:
         print '\n===' + turquoise + ' PREVIOUS RESULTS FOUND... ' + normal + dump_results[0] + '==='
         print '\n===' + turquoise + ' LOADING RESULTS...' + normal + '==='
-        results = pickle.load(open('./{}/{}'.format(module_name, dump_results[0]), 'rb'))
+        results = pickle.load(
+            open('./{}/{}'.format(module_name, dump_results[0]), 'rb'))
         print '\n===' + turquoise + ' LOAD IS COMPLETED!' + normal + '==='
-        results = [x for sublist in results for x in sublist]  # Flat results into 1D List
+        results = [x for sublist in results
+                   for x in sublist]  # Flat results into 1D List
 
         print 'Results length: ', len(results)
 
         y_sent = list([x[0] for x in results])  # List of all sentiment scores
-        y_lex = list([x[1][0] for x in results])  # List of all lexical density scores
-        y_read = list([x[1][1] for x in results])  # List of all readability scores
+        y_lex = list([x[1][0]
+                      for x in results])  # List of all lexical density scores
+        y_read = list([x[1][1]
+                       for x in results])  # List of all readability scores
 
         length = len(results)
         plot_graphs(y_sent, y_lex, y_read, length, label)

@@ -61,7 +61,7 @@ def noteStateSingleToInputForm(state,time):
         beat = buildBeat(time)
         context = buildContext(state)
         key = randint(0,1)
-        complexity = randint(1, 6) # Maybe worth to change to the range of music complexity [1,6]
+        complexity = randint(1, 6)
         #print 'Time step: {}, state length: {}, beat: {}, context: {}\n\t'.format(time, len(state), beat, context)
         return [noteInputForm(note, state, context, beat, complexity, key) for note in range(len(state))]
     else:
