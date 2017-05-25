@@ -40,7 +40,7 @@ Following files fall under the LICENSE.txt agreement:
   5. music_composition.py
   6. output_to_input.py
   
-Changes in the code were made in order to adapt the code for the purpose of my project, however, initial implementation of the LSTM model and music generation (oulined python files) is an intellectual property of _Daniel Johnson_.
+Changes in the code were made in order to adapt it for the purpose of my project, however, initial implementation of the LSTM model and music generation (oulined python files) is an intellectual property of _Daniel Johnson_.
 
 Rest of the project is presented under license in PROJECT_LICENSE.txt file and intellectual property of the researcher - Mikhail Molotkov.
 
