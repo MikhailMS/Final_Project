@@ -39,8 +39,10 @@ Following files fall under the LICENSE.txt agreement:
   4. model_training.py
   5. music_composition.py
   6. output_to_input.py
-Changes in the code were made in order to adapt the code for the purpose of my project, however, initial implementation of the LSTM model and music generation (oulined python files) is an intellectual property of _Daniel Johnson_
-Rest of the project presented undex license in PROJECT_LICENSE.txt file and is intellectual property of the researcher - Mikhail Molotkov.
+  
+Changes in the code were made in order to adapt the code for the purpose of my project, however, initial implementation of the LSTM model and music generation (oulined python files) is an intellectual property of _Daniel Johnson_.
+
+Rest of the project is presented under license in PROJECT_LICENSE.txt file and intellectual property of the researcher - Mikhail Molotkov.
 
 Application has been created under _**macOS Sierra 10.12 and Python 2.7.10**_ and thus has not been tested under other OS.
 
