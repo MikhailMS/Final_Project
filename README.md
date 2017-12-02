@@ -1,10 +1,10 @@
-# Final year project - musification of text data.
+# Musification of text data.
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/210f7da193434400a028194a89dd6658)](https://www.codacy.com/app/1488maiklm/Final_Project?utm_source=github.com&utm_medium=referral&utm_content=MikhailMS/Final_Project&utm_campaign=badger)
 
-## **Functionality is under development.**
+## **Project completed as a part of dissertation in my final year @ University of Sheffield**
 
-## List of functionality that would be added later in the priority order:
+## List of functionality in the order it's been completed:
 
 1. - [x] **Text analysis module**: _Available in two forms: single processing & multi processing (default choice)_
    - [x] Read in epub files
@@ -25,7 +25,7 @@
 ## Installation procedure:
   1. Clone the repo
   2. Run `pip install -r requirements.txt`
-  3. Please ensure, that you are able to run computations of GPU and GPU environment is all set and ready to use, otherwise application won't run
+  3. Please ensure, that you are able to run computations of GPU and GPU environment is all set and ready to use, otherwise application would require much more time to run.
   4. Add a book in the `.epub` format to the _**text_analysis_module**_ folder.
   5. Create folder __'music'__ with MIDI files within **music_generation_module** directory.
   6. Run `main.py` script. Once it is started, wait until nltk-downloader shows up and download following packages: _**brown**_, _**punkt**_ in order for nltk package to work properly.
@@ -42,7 +42,7 @@ Following files fall under the LICENSE.txt agreement:
   5. music_composition.py
   6. output_to_input.py
   
-Changes in the code were made in order to adapt it for the purpose of my project, however, initial implementation of the LSTM model and music generation (oulined python files) is an intellectual property of _Daniel Johnson_.
+Changes in the code were made in order to adapt it for the purpose of my project, however, initial implementation of the LSTM model and music generation (outlined python files) is an intellectual property of _Daniel Johnson_.
 
 Rest of the project is presented under license in PROJECT_LICENSE.txt file and intellectual property of the researcher - Mikhail Molotkov.
 
@@ -51,5 +51,5 @@ Application has been created under _**macOS Sierra 10.12 and Python 2.7.10**_ an
 If getting **DEPRECATION: Uninstalling a distutils installed project (six) has
 been deprecated and will be removed in a future version. This is due to the fact
 that uninstalling a distutils project will only partially uninstall the project**
-error, than on **step 2** change command to:  
+error, than on **step 2** of installation procedure, change command to:  
 `sudo pip install -r requirements.txt --ignore-installed six`
