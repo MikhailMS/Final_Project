@@ -1,5 +1,7 @@
 # Final year project - musification of text data.
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/210f7da193434400a028194a89dd6658)](https://www.codacy.com/app/1488maiklm/Final_Project?utm_source=github.com&utm_medium=referral&utm_content=MikhailMS/Final_Project&utm_campaign=badger)
+
 ## **Functionality is under development.**
 
 ## List of functionality that would be added later in the priority order:
