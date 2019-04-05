@@ -1,7 +1,7 @@
 # Import packages
 import cPickle as pickle
 import music21
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import numpy as np
 from os import listdir
 from os.path import isfile, join
@@ -17,45 +17,49 @@ def compute_complexity_stats(folders):
     and more complex music would have less single notes and more complex chords (3 and more notes)
     """
     if folders:
+        folders = set(folders) # This is redundant, but nice to see analysis being done in order
         for iter,folder in enumerate(folders):
             results = list()
             print '[+]' + green + ' Analysing {} files '.format(folder) + normal + '[+]'
-            available_files = [f for f in listdir("./{}/{}/{}".format(module_name, music_dir, folder)) if (isfile(join("./{}/{}/{}".format(module_name, music_dir, folder), f)) and (".mid" in f))]
+            available_files = [f for f in listdir("./{}/{}/{}".format(MODULE_NAME, MUSIC_DIR, folder)) if (isfile(join("./{}/{}/{}".format(MODULE_NAME, MUSIC_DIR, folder), f)) and (".mid" in f))]
             for music in available_files:
                 name = music[:-4]
                 print 'Computing stats for {}'.format(music)
-                score = music21.converter.parse("./{}/{}/{}/{}".format(module_name, music_dir, folder, music))
+                try:
+                    score = music21.converter.parse("./{}/{}/{}/{}".format(MODULE_NAME, MUSIC_DIR, folder, music))
 
-                single_notes = 0
-                total_notes = 0
-                simple_chords = 0
-                complex_chords = 0
+                    single_notes   = 0
+                    total_notes    = 0
+                    simple_chords  = 0
+                    complex_chords = 0
 
-                for note in score.recurse().getElementsByClass('Note'):
-                    single_notes += 1
-                    total_notes += 1
-                for chord in score.recurse().getElementsByClass('Chord'):
-                    if len(chord.pitches) < 3:
-                        simple_chords += 1
-                        total_notes += len(chord.pitches)
-                    if len(chord.pitches) >= 3:
-                        complex_chords += 1
-                        total_notes += len(chord.pitches)
-                total_elem_played = single_notes + simple_chords + complex_chords
-                n_bars = total_elem_played/4.0 # Redundant
-                notes_p_bar = total_notes/n_bars # Redundant
+                    for note in score.recurse().getElementsByClass('Note'):
+                        single_notes += 1
+                        total_notes  += 1
+                    for chord in score.recurse().getElementsByClass('Chord'):
+                        if len(chord.pitches) < 3:
+                            simple_chords += 1
+                            total_notes   += len(chord.pitches)
+                        if len(chord.pitches) >= 3:
+                            complex_chords += 1
+                            total_notes    += len(chord.pitches)
+                    total_elem_played = single_notes + simple_chords + complex_chords
+                    n_bars            = total_elem_played/4.0 # Redundant - 4.0 is a number of elements played in a single bar, since music size is 4/4
+                    notes_p_bar       = total_notes/n_bars    # Redundant
 
-                results.append([single_notes, total_notes, simple_chords, complex_chords, notes_p_bar, total_elem_played])
-            print '[!!]' + green + ' Saving results to ./{}/{}/complexity_stats_{}.p '.format(module_name, results_dir, iter+1) + normal + '[!!]'
-            pickle.dump(results,open('./{}/{}/complexity_stats_{}.p'.format(module_name, results_dir, iter+1), 'wb'))
+                    results.append([single_notes, total_notes, simple_chords, complex_chords, notes_p_bar, total_elem_played])
+                except:
+                    print '{} has been ignored'.format(music)
+            print '[!!]' + green + ' Saving results to ./{}/{}/complexity_stats_{}.p '.format(MODULE_NAME, RESULTS_DIR, int(folder[-1])) + normal + '[!!]'
+            pickle.dump(results,open('./{}/{}/complexity_stats_{}.p'.format(MODULE_NAME, RESULTS_DIR, int(folder[-1])), 'wb'))
     else:
         print '[!!]'+ red + 'No subfolders found!' + normal + '[!!]'
     print '[+]' + green + ' Complexity analysis is completed ' + normal + '[+]'
 
 def get_complexity_stats():
     """Higher level function that runs complexity stats computation"""
-    stats_saved = [f for f in listdir("./{}/{}/".format(module_name, results_dir)) if isfile(join("./{}/{}".format(module_name, results_dir), f)) and ("complexity_stats" in f)]
-    music_folders = [f for f in listdir("./{}/{}/".format(module_name, music_dir)) if not isfile(join("./{}/{}".format(module_name, music_dir), f)) and ("level" in f)]
+    stats_saved = [f for f in listdir("./{}/{}/".format(MODULE_NAME, RESULTS_DIR)) if isfile(join("./{}/{}".format(MODULE_NAME, RESULTS_DIR), f)) and ("complexity_stats" in f)]
+    music_folders = [f for f in listdir("./{}/{}/".format(MODULE_NAME, MUSIC_DIR)) if not isfile(join("./{}/{}".format(MODULE_NAME, MUSIC_DIR), f)) and ("level" in f)]
 
     if stats_saved:
         folders_to_analyse = music_folders[:]
@@ -76,20 +80,20 @@ def get_complexity_stats():
 
 def get_n_plot_complexity_stats(visual):
     """Plots graphs for complexity stats"""
-    complexity_stats_files = [f for f in listdir("./{}/{}/".format(module_name, results_dir)) if isfile(join("./{}/{}".format(module_name, results_dir), f)) and ("complexity_stats" in f)]
+    complexity_stats_files = [f for f in listdir("./{}/{}/".format(MODULE_NAME, RESULTS_DIR)) if isfile(join("./{}/{}".format(MODULE_NAME, RESULTS_DIR), f)) and ("complexity_stats" in f)]
 
     simple_stats = list()
     print '\n[+]' + green + ' Computing simple stats ' + normal + '[+]'
     for iter,f in enumerate(complexity_stats_files):
 
-        all_stats = pickle.load(open('./{}/{}/{}'.format(module_name, results_dir, f), 'rb'))
+        all_stats = pickle.load(open('./{}/{}/{}'.format(MODULE_NAME, RESULTS_DIR, f), 'rb'))
         all_stats = np.asarray(all_stats)
         print '\nLength of Level {} is {}'.format(iter+1, len(all_stats))
 
-        mins = all_stats[:,[0,2,3,5]].min(0) # Get minimum values
-        maxes = all_stats[:,[0,2,3,5]].max(0) # Get maximum values
+        mins  = all_stats[:,[0,2,3,5]].min(0)  # Get minimum values
+        maxes = all_stats[:,[0,2,3,5]].max(0)  # Get maximum values
         means = all_stats[:,[0,2,3,5]].mean(0) # Get mean values
-        std = all_stats[:,[0,2,3,5]].std(0) # Get standard deviation values
+        std   = all_stats[:,[0,2,3,5]].std(0)  # Get standard deviation values
         print 'Level {}, means {}'.format(iter+1, means)
         simple_stats.append(means)
 
@@ -111,11 +115,11 @@ def get_n_plot_complexity_stats(visual):
     for iter,f in enumerate(complexity_stats_files):
         results = list()
 
-        all_stats = pickle.load(open('./{}/{}/{}'.format(module_name, results_dir, f), 'rb'))
+        all_stats = pickle.load(open('./{}/{}/{}'.format(MODULE_NAME, RESULTS_DIR, f), 'rb'))
         all_stats = np.asarray(all_stats)
 
-        single_notes_per_total_elem = list(map(dist_helper, all_stats[:,0], all_stats[:,5]))
-        simple_chords_per_total_elem = list(map(dist_helper, all_stats[:,2], all_stats[:,5]))
+        single_notes_per_total_elem   = list(map(dist_helper, all_stats[:,0], all_stats[:,5]))
+        simple_chords_per_total_elem  = list(map(dist_helper, all_stats[:,2], all_stats[:,5]))
         complex_chords_per_total_elem = list(map(dist_helper, all_stats[:,3], all_stats[:,5]))
 
         results.append(single_notes_per_total_elem)
@@ -124,10 +128,10 @@ def get_n_plot_complexity_stats(visual):
         results = np.asarray(results)
         results = results.T
 
-        mins = results.min(0) # Get minimum values
-        maxes = results.max(0) # Get maximum values
+        mins  = results.min(0)  # Get minimum values
+        maxes = results.max(0)  # Get maximum values
         means = results.mean(0) # Get mean values
-        std = results.std(0) # Get standard deviation values
+        std   = results.std(0)  # Get standard deviation values
         print 'Level {}, means {}'.format(iter+1, means, mins)
         complex_stats.append(means) # Save means for identification of complexity of generated music
 
@@ -154,14 +158,15 @@ def dist_helper(x,y):
 def run_complexity_analysis(visual=True):
     """Runs computation of music complexity stats and then plot distribution graphs for each complexity level (enabled by default)
     First set of graphs is simple:
-      First column: distribution of single notes played at given level (naive)
+      First column:  distribution of single notes played at given level (naive)
       Second column: distribution of simple chords played at given level (naive)
-      Third column: distribution of complex chords played at given level (naive)
+      Third column:  distribution of complex chords played at given level (naive)
       Fourth column: distribution of total played elements at given level (naive)
+
     Second set of graphs is a bit more complicated:
-      First column: distribution of (single_notes/total_played_elements) at given level
+      First column:  distribution of (single_notes/total_played_elements) at given level
       Second column: distribution of (simple_chords/total_played_elements) at given level
-      Third column: distribution of (complex_chords/total_played_elements) at given level
+      Third column:  distribution of (complex_chords/total_played_elements) at given level
     """
     get_complexity_stats()
     stats = get_n_plot_complexity_stats(visual)

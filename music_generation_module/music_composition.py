@@ -13,7 +13,7 @@ from utils import *
 from constants import *
 
 # Main class
-def music_composition_helper(m, pcs, times=20, keep_thoughts=False, name="final"):
+def music_composition_helper(m, pcs, times=20, keep_thoughts=False, name="final_piece"):
     """Function composes music according to trained LSTM models
     and stores them into 'output' folder
     """
@@ -23,21 +23,21 @@ def music_composition_helper(m, pcs, times=20, keep_thoughts=False, name="final"
         all_thoughts = []
     m.start_slow_walk(xIpt[0])
     cons = 1
-    for time in range(model_training.batch_len*times):
+    for time in range(model_training.BATCH_LEN*times):
         resdata = m.slow_walk_fun( cons )
         nnotes = numpy.sum(resdata[-1][:,0])
-    	if nnotes < 2:
-    		if cons > 1:
-    			cons = 1
-    		cons -= 0.02
-    	else:
-    		cons += (1 - cons)*0.3
-    	all_outputs.append(resdata[-1])
-    	if keep_thoughts:
-    		all_thoughts.append(resdata)
-    noteStateMatrixToMidi(numpy.array(all_outputs), name='./{}/{}/{}'.format(module_name, output_dir, name))
+        if nnotes < 2:
+            if cons > 1:
+                cons = 1
+                cons -= 0.02
+        else:
+            cons += (1 - cons)*0.3
+        all_outputs.append(resdata[-1])
+        if keep_thoughts:
+            all_thoughts.append(resdata)
+    noteStateMatrixToMidi(numpy.array(all_outputs), name='./{}/{}/{}'.format(MODULE_NAME, OUTPUT_DIR, name))
     if keep_thoughts:
-    	pickle.dump(all_thoughts, open('./{}/{}/{}.p'.format(module_name, output_dir, name),'wb'))
+        pickle.dump(all_thoughts, open('./{}/{}/{}.p'.format(MODULE_NAME, OUTPUT_DIR, name),'wb'))
 
 def music_composition_helper_final(m, pcs, times, sent_score_mapped, lex_score_mapped, read_score_mapped):
     """Function composes music according to trained LSTM models and mapped text features
@@ -52,13 +52,13 @@ def music_composition_helper_final(m, pcs, times, sent_score_mapped, lex_score_m
             cons = 1
 
         else:
-            new_pcs = midiToNoteStateMatrix('./{}/{}/{}.mid'.format(module_name, results_dir, i-1))
+            new_pcs = midiToNoteStateMatrix('./{}/{}/{}.mid'.format(MODULE_NAME, RESULTS_DIR, i-1))
             xIpt, xOpt = map(lambda x: numpy.array(x, dtype='int8'), model_training.getMidiSegmentTextFeatures(new_pcs, read_score_mapped[i], sent_score_mapped[i]))
             all_outputs = [xOpt[0]] # Choose previously created midi file and pass desired complexity and key along
             m.start_slow_walk(xIpt[0])
             cons = 1
 
-        for time in range(model_training.batch_len*times):
+        for time in range(model_training.BATCH_LEN*times):
             resdata = m.slow_walk_fun( cons )
             nnotes = numpy.sum(resdata[-1][:,0])
             if nnotes < 2:
@@ -68,35 +68,37 @@ def music_composition_helper_final(m, pcs, times, sent_score_mapped, lex_score_m
             else:
                 cons += (1 - cons)*0.3
             all_outputs.append(resdata[-1])
-        noteStateMatrixToMidi(numpy.array(all_outputs), name='./{}/{}/{}'.format(module_name, results_dir, i), velocity=lex_score_mapped[i]*0.25)
+        noteStateMatrixToMidi(numpy.array(all_outputs), name='./{}/{}/{}'.format(MODULE_NAME, RESULTS_DIR, i), velocity=lex_score_mapped[i]*0.25)
 
     # Here goes tempo change
-    available_files = [f for f in listdir("./{}/{}".format(module_name, results_dir)) if (isfile(join("./{}/{}".format(module_name, results_dir), f)) and (".mid" in f))]
+    available_files    = sorted([f for f in listdir("./{}/{}".format(MODULE_NAME, RESULTS_DIR)) if (isfile(join("./{}/{}".format(MODULE_NAME, RESULTS_DIR), f)) and (".mid" in f))],
+                                key=lambda f: int(filter(str.isdigit, f)))
     tempo_scale_factor = 1.5 # Initial tempo slowed by half (120bpm down to 60bpm)
 
-    for iter, music in enumerate(available_files):
-        score = music21.converter.parse("./{}/{}/{}".format(module_name, results_dir, music))
-        scale = lex_score_mapped[iter]*0.25
-        new_tempo = tempo_scale_factor-scale # If smaller than 1, then speed up, otherwise slow down
+    for index, music in enumerate(available_files):
+        score     = music21.converter.parse("./{}/{}/{}".format(MODULE_NAME, RESULTS_DIR, music))
+        scale     = lex_score_mapped[index] * 0.25
+        new_tempo = tempo_scale_factor - scale # If smaller than 1, then speed up, otherwise slow down
+
         print 'Changing tempo in {} from {} to {}'.format(music, tempo_scale_factor, new_tempo)
         newscore = score.scaleOffsets(new_tempo).scaleDurations(new_tempo)
-        newscore.write('midi', './{}/{}/final_{}'.format(module_name, results_dir, music))
+        newscore.write('midi', './{}/{}/final_{}'.format(MODULE_NAME, RESULTS_DIR, music))
 
 def run_music_composition(pcs, sent_score_mapped, lex_score_mapped, read_score_mapped, music_length= 30, epochs=5500):
     start = time.time()
 
     try:
-        os.mkdir('./{}/{}'.format(module_name, output_dir))
-        print '\n===' + green + ' {} folder has been created '.format(output_dir) + normal + '==='
+        os.mkdir('./{}/{}'.format(MODULE_NAME, OUTPUT_DIR))
+        print '\n===' + green + ' {} folder has been created '.format(OUTPUT_DIR) + normal + '==='
     except:
-        print '\n===' + red + ' {} folder already exists '.format(output_dir) + normal + '==='
+        print '\n===' + red + ' {} folder already exists '.format(OUTPUT_DIR) + normal + '==='
         pass
 
     try:
-        os.mkdir('./{}/{}'.format(module_name, results_dir))
-        print '\n===' + green + ' {} folder has been created '.format(results_dir) + normal + '==='
+        os.mkdir('./{}/{}'.format(MODULE_NAME, RESULTS_DIR))
+        print '\n===' + green + ' {} folder has been created '.format(RESULTS_DIR) + normal + '==='
     except:
-        print '\n===' + red + ' {} folder already exists '.format(results_dir) + normal + '==='
+        print '\n===' + red + ' {} folder already exists '.format(RESULTS_DIR) + normal + '==='
         pass
 
     print '\n===' + turquoise + ' LSTM model is being created... ' + normal + '==='
@@ -107,10 +109,11 @@ def run_music_composition(pcs, sent_score_mapped, lex_score_mapped, read_score_m
 
     # Save LSTM model configuration
     #print '\n===' + turquoise + ' LSTM model is being saved... ' + normal + '==='
-    #pickle.dump( m.learned_config, open( "./{}/{}/final_learned_config.p".format(module_name, output_dir), "wb" ) )
+    #pickle.dump( m.learned_config, open( "./{}/{}/final_learned_config.p".format(MODULE_NAME, OUTPUT_DIR), "wb" ) )
 
-    print '\n===' + turquoise + ' Music for final LSTM configuration is being generated... ' + normal + '==='
-    music_composition_helper(m, pcs, name="composition") # Generate music
+    # Just to see how model performs on its own
+    # print '\n===' + turquoise + ' Music for final LSTM configuration is being generated... ' + normal + '==='
+    # music_composition_helper(m, pcs, name="composition") # Generate music
 
     print '\n===' + turquoise + ' Music for given text is being generated... ' + normal + '==='
     music_composition_helper_final(m, pcs, music_length, sent_score_mapped, lex_score_mapped, read_score_mapped) # Generate music

@@ -8,7 +8,7 @@ from os.path import isfile, join
 
 # Import modules
 from midi_to_statematrix import *
-from model_training import batch_len
+# from model_training import batch_len
 from model_data import *
 from utils import *
 from constants import *
@@ -20,16 +20,16 @@ def process_music():
     pieces = {}
     music_keys = load_music_key()
 
-    music_folders = [f for f in listdir("./{}/{}/".format(module_name, music_dir)) if not(isfile(join("./{}/{}/".format(module_name, music_dir), f))) and ("level" in f)]
+    music_folders = [f for f in listdir("./{}/{}/".format(MODULE_NAME, MUSIC_DIR)) if not(isfile(join("./{}/{}/".format(MODULE_NAME, MUSIC_DIR), f))) and ("level" in f)]
 
     for iter, folder in enumerate(music_folders):
-        available_files = [f for f in listdir("./{}/{}/{}".format(module_name, music_dir, folder)) if (isfile(join("./{}/{}/{}".format(module_name, music_dir, folder), f)) and (".mid" in f))]
+        available_files = [f for f in listdir("./{}/{}/{}".format(MODULE_NAME, MUSIC_DIR, folder)) if (isfile(join("./{}/{}/{}".format(MODULE_NAME, MUSIC_DIR, folder), f)) and (".mid" in f))]
         for music in available_files:
 
             name = music[:-4]
             try:
-                outMatrix = midiToNoteStateMatrix(join("./{}/{}/{}".format(module_name, music_dir, folder), music))
-                if len(outMatrix) <= batch_len:
+                outMatrix = midiToNoteStateMatrix(join("./{}/{}/{}".format(MODULE_NAME, MUSIC_DIR, folder), music))
+                if len(outMatrix) <= BATCH_LEN:
                     print "Skipped {}".format(music)
                     skipped[music] = folder
                     continue
@@ -49,7 +49,7 @@ def process_music():
     if skipped:
         for k,v in skipped.iteritems():
             try:
-                os.remove('./{}/{}/{}/{}'.format(module_name, music_dir, v, k))
+                os.remove('./{}/{}/{}/{}'.format(MODULE_NAME, MUSIC_DIR, v, k))
             except OSError, e:
                 print '{} could not be deleted by script: {}'.format(item, e)
     else:
@@ -65,11 +65,11 @@ def music_key_helper(folders):
         for folder in folders:
             results = dict()
             print '[+]' + green + ' Analysing {} files '.format(folder) + normal + '[+]'
-            available_files = [f for f in listdir("./{}/{}/{}".format(module_name, music_dir, folder)) if (isfile(join("./{}/{}/{}".format(module_name, music_dir, folder), f)) and (".mid" in f))]
+            available_files = [f for f in listdir("./{}/{}/{}".format(MODULE_NAME, MUSIC_DIR, folder)) if (isfile(join("./{}/{}/{}".format(MODULE_NAME, MUSIC_DIR, folder), f)) and (".mid" in f))]
             for music in available_files:
                 name = music[:-4]
                 try:
-                    score = music21.converter.parse("./{}/{}/{}/{}".format(module_name, music_dir, folder, music))
+                    score = music21.converter.parse("./{}/{}/{}/{}".format(MODULE_NAME, MUSIC_DIR, folder, music))
                     key = score.analyze('key')
                     print '{} is in {} key'.format(music, key.mode)
                     results[name] = 1 if key.mode=='major' else 0
@@ -78,15 +78,15 @@ def music_key_helper(folders):
                     print "Unexpected error, {} was skipped".format(music)
                     skipped[music] = folder
 
-            print '[!!]' + green + ' Saving results to ./{}/{}/keys_{}.p '.format(module_name, music_dir, folder) + normal + '[!!]'
-            pickle.dump(results,open('./{}/{}/keys_{}.p'.format(module_name, music_dir, folder), 'wb'))
+            print '[!!]' + green + ' Saving results to ./{}/{}/keys_{}.p '.format(MODULE_NAME, MUSIC_DIR, folder) + normal + '[!!]'
+            pickle.dump(results,open('./{}/{}/keys_{}.p'.format(MODULE_NAME, MUSIC_DIR, folder), 'wb'))
     else:
         print '[!!]'+ red + 'No subfolders found!' + normal + '[!!]'
 
     if skipped:
         for k,v in skipped.iteritems():
             try:
-                os.remove('./{}/{}/{}/{}'.format(module_name, music_dir, v, k))
+                os.remove('./{}/{}/{}/{}'.format(MODULE_NAME, MUSIC_DIR, v, k))
             except OSError, e:
                 print '{} could not be deleted by script: {}'.format(item, e)
     else:
@@ -96,10 +96,10 @@ def music_key_helper(folders):
 def load_music_key():
     """Once all keys are available, load them into one dict and return it"""
     results = dict()
-    keys_saved = [f for f in listdir("./{}/{}/".format(module_name, music_dir)) if ("keys_" in f)]
+    keys_saved = [f for f in listdir("./{}/{}/".format(MODULE_NAME, MUSIC_DIR)) if ("keys_" in f)]
 
     for key in keys_saved:
-        results.update(pickle.load(open('./{}/{}/{}'.format(module_name, music_dir, key), 'rb')))
+        results.update(pickle.load(open('./{}/{}/{}'.format(MODULE_NAME, MUSIC_DIR, key), 'rb')))
     print len(results)
     return results
 
@@ -108,12 +108,12 @@ def get_music_key_dict():
     key - music name,
     value - key (0 - minor, 1 - major)
     """
-    keys_saved = [f for f in listdir("./{}/{}/".format(module_name, music_dir)) if isfile(join("./{}/{}".format(module_name, music_dir), f)) and ("keys_" in f)]
-    music_folders = [f for f in listdir("./{}/{}/".format(module_name, music_dir)) if not isfile(join("./{}/{}".format(module_name, music_dir), f)) and ("level" in f)]
+    keys_saved = [f for f in listdir("./{}/{}/".format(MODULE_NAME, MUSIC_DIR)) if isfile(join("./{}/{}".format(MODULE_NAME, MUSIC_DIR), f)) and ("keys_" in f)]
+    music_folders = [f for f in listdir("./{}/{}/".format(MODULE_NAME, MUSIC_DIR)) if not isfile(join("./{}/{}".format(MODULE_NAME, MUSIC_DIR), f)) and ("level" in f)]
 
     if keys_saved:
         folders_to_analyse = music_folders[:]
-        folders_been_analysed = [f for f in music_folders for keys in keys_saved if f[-1] in keys[-3]]
+        folders_been_analysed = set([f for f in music_folders for keys in keys_saved if f[-1] in keys[-3]])
         for item in folders_been_analysed:
             folders_to_analyse.remove(item)
 
