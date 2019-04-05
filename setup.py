@@ -2,10 +2,10 @@ from setuptools import setup
 
 setup(
     name="TextMusification",
-    version="1.0.0",
+    version="1.1.0",
     description='Tool generates music depending on the text provided to it',
     author='Mikhail Molotkov',
-    author_email='mmolotkov1@sheffield.ac.uk',
+    author_email='1488maiklm@gmail.com',
     url='https://github.com/MikhailMS/Final_Project',
     install_requires=[
         'Theano',
