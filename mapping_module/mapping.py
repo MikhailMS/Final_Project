@@ -6,7 +6,7 @@ import numpy as np
 
 # Import modules
 from utils import *
-from text_analysis_module import plot_features
+# from text_analysis_module import plot_features
 
 # Main class
 text_module_name = 'text_analysis_module'
@@ -22,8 +22,8 @@ def loadTextFeatures():
 
     if text_features_files:
         print '\n===' + turquoise + ' TEXT FEATURES FOUND... ' + "./{}/{}".format(
-            text_module_name, text_features_files[0]) + '==='
-        print '\n===' + turquoise + ' LOADING FEATURES... ' + normal + '==='
+            text_module_name, text_features_files[0]) + normal + '==='
+        print '\n===' + turquoise + ' LOADING TEXT FEATURES... ' + normal + '==='
         features = pickle.load(
             open("./{}/{}".format(text_module_name, text_features_files[0]),
                  'rb'))
