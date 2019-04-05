@@ -1,19 +1,19 @@
 # Import packages
+import re, collections, ebooklib, pickle, multiprocessing, nltk
+
+from bs4 import BeautifulSoup
+from ebooklib import epub
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+from nltk import tokenize
 from os import listdir
 from os.path import isfile, join
 from operator import itemgetter
-import re, collections, ebooklib, pickle, multiprocessing, nltk
-from ebooklib import epub
-from bs4 import BeautifulSoup
-from nltk.sentiment.vader import SentimentIntensityAnalyzer
-from nltk import tokenize
-
 
 # Import modules
 from utils import *
 
 # Main class
-module_name = 'text_analysis_module'
+MODULE_NAME = 'text_analysis_module'
 
 def read_in_epub(book_name):
     """Function reads in specific ePub book and
@@ -42,8 +42,8 @@ def extract_text():
                              '\xe2\x80\x94', ' ').replace("\"", '')
 
     files = [
-        f for f in listdir("./{}/".format(module_name))
-        if (isfile(join("./{}/".format(module_name), f)) and ("output_" in f))
+        f for f in listdir("./{}/".format(MODULE_NAME))
+        if (isfile(join("./{}/".format(MODULE_NAME), f)) and ("output_" in f))
     ]
     for file_name in files:
         page = open(file_name, 'r')
@@ -335,10 +335,10 @@ def text_analysis_helper(file_names):
 
         output_file = "extracted_features.p"
         print '\n===' + blue + ' SAVE RESULTS TO: ' + normal + './{}/{}'.format(
-            module_name, output_file) + '==='
+            MODULE_NAME, output_file) + '==='
         # Save results to save time on next run
         pickle.dump(results,
-                    open('./{}/{}'.format(module_name, output_file), "wb"))
+                    open('./{}/{}'.format(MODULE_NAME, output_file), "wb"))
 
         return results
     else:  # Otherwise
@@ -378,10 +378,10 @@ def text_analysis_helper_parallel(file_names):
 
         output_file = "extracted_features.p"
         print '\n===' + blue + ' SAVE RESULTS TO: ' + normal + './{}/{}'.format(
-            module_name, output_file) + '==='
+            MODULE_NAME, output_file) + '==='
         # Save results to save time on next run
         pickle.dump(results,
-                    open('./{}/{}'.format(module_name, output_file), "wb"))
+                    open('./{}/{}'.format(MODULE_NAME, output_file), "wb"))
 
         print '\n===' + blue + ' RESULTS ' + normal + '==='
         return results
@@ -401,8 +401,8 @@ def run_text_analysis():
     #nltk.data.path.append('') # Keep in comment if nltk_data resides at default location
     # Find file that holds extracted features
     dump_results = [
-        f for f in listdir("./{}/{}".format(module_name))
-        if (isfile(join("./{}/{}".format(module_name), f)) and
+        f for f in listdir("./{}/{}".format(MODULE_NAME))
+        if (isfile(join("./{}/{}".format(MODULE_NAME), f)) and
             ("extracted_features" in f))
     ]
 
@@ -411,28 +411,28 @@ def run_text_analysis():
         print '\n===' + turquoise + ' PREVIOUS RESULTS FOUND... ' + normal + dump_results[0] + '==='
         print '\n===' + turquoise + ' LOADING RESULTS...' + normal + '==='
         results = pickle.load(
-            open("./{}/{}".format(module_name, dump_results[0]), 'rb'))
+            open("./{}/{}".format(MODULE_NAME, dump_results[0]), 'rb'))
         print '\n===' + turquoise + ' LOAD IS COMPLETED!' + normal + '==='
         return results
     # Otherwise initiate feature extraction process
     else:
         file_names = [
-            f for f in listdir("./{}/{}".format(module_name))
-            if (isfile(join("./{}/{}".format(module_name), f)) and
+            f for f in listdir("./{}/{}".format(MODULE_NAME))
+            if (isfile(join("./{}/{}".format(MODULE_NAME), f)) and
                 ("clean_output_" in f))
         ]
         if file_names:  # If clean_output files already exist, skip load & clean stages
-            file_names = ["./{}/{}".format(module_name, x) for x in file_names]
+            file_names = ["./{}/{}".format(MODULE_NAME, x) for x in file_names]
             print '\n===' + turquoise + ' CLEAN DATA FOUND... ' + normal + '==='
             return text_analysis_helper(file_names)  # Complete analysis
         else:
             # Otherwise load text and clean it
             book_names = [
-                f for f in listdir("./{}/{}".format(module_name))
-                if (isfile(join("./{}/{}".format(module_name), f)) and
+                f for f in listdir("./{}/{}".format(MODULE_NAME))
+                if (isfile(join("./{}/{}".format(MODULE_NAME), f)) and
                     (".epub" in f))
             ]
-            book_names = ["./{}/{}".format(module_name, x) for x in book_names]
+            book_names = ["./{}/{}".format(MODULE_NAME, x) for x in book_names]
             print '\n===' + blue + ' READ IN THE BOOK... ' + normal + book_names[0] + '==='
             read_in_epub(book_names[0])
             print '\n===' + blue + ' CLEAN UP THE TEXT...' + normal + '==='
@@ -451,11 +451,11 @@ def run_text_analysis():
                     break
 
             file_names = [
-                f for f in listdir("./{}/{}".format(module_name))
-                if (isfile(join("./{}/{}".format(module_name), f)) and
+                f for f in listdir("./{}/{}".format(MODULE_NAME))
+                if (isfile(join("./{}/{}".format(MODULE_NAME), f)) and
                     ("clean_output_" in f))
             ]
-            file_names = ["./{}/{}".format(module_name, x) for x in file_names]
+            file_names = ["./{}/{}".format(MODULE_NAME, x) for x in file_names]
             return text_analysis_helper(file_names)  # Complete analysis
 
 def run_text_analysis_in_parallel():
@@ -463,51 +463,51 @@ def run_text_analysis_in_parallel():
     available cpu_cores and returns a set of extracted features as an array
     in the form -> (sentiment, (lexical_score, readability_score))
     """
-    try:
-        nltk.download()
-    except:
-        pass
-    nltk.data.path.append(
-        '/data/aca14mm/nltk_data'
-    )  # Keep in comment if nltk_data resides at default location
+    # TODO: nltk is broken for whatever reason, so I cannot do nltk.download() unless I find a solution
+    # try:
+    #     nltk.download()
+    # except:
+    #     pass
+
+    # nltk.data.path.append('/data/aca14mm/nltk_data')  # Keep in comment if nltk_data resides at default location
     # Find file that holds extracted features
     dump_results = [
-        f for f in listdir("./{}/".format(module_name))
-        if (isfile(join("./{}/".format(module_name), f)) and
+        f for f in listdir("./{}/".format(MODULE_NAME))
+        if (isfile(join("./{}/".format(MODULE_NAME), f)) and
             ("extracted_features" in f))
     ]
 
     # If such file exists, then load file and return features
     if dump_results:
         print '\n===' + turquoise + ' PREVIOUS RESULTS FOUND... ' + "./{}/{}".format(
-            module_name, dump_results[0]) + '==='
+            MODULE_NAME, dump_results[0]) + '==='
         print '\n===' + turquoise + ' LOADING RESULTS... ' + normal + '==='
         results = pickle.load(
-            open("./{}/{}".format(module_name, dump_results[0]), 'rb'))
+            open("./{}/{}".format(MODULE_NAME, dump_results[0]), 'rb'))
         print '\n===' + turquoise + ' LOAD IS COMPLETED! ' + normal + '==='
         return results
     # Otherwise initiate feature extraction process
     else:
 
         file_names = [
-            f for f in listdir("./{}/".format(module_name))
-            if (isfile(join("./{}/".format(module_name), f)) and
+            f for f in listdir("./{}/".format(MODULE_NAME))
+            if (isfile(join("./{}/".format(MODULE_NAME), f)) and
                 ("clean_output_" in f))
         ]
 
         if file_names:  # If clean_output files exist, skip load & clean stages
             print '\n===' + turquoise + ' CLEAN DATA FOUND... ' + normal + '==='
-            file_names = ["./{}/{}".format(module_name, x) for x in file_names]
+            file_names = ["./{}/{}".format(MODULE_NAME, x) for x in file_names]
             return text_analysis_helper_parallel(
                 file_names)  # Complete analysis
         else:
             # Otherwise load text and clean it
             book_names = [
-                f for f in listdir("./{}/".format(module_name))
-                if (isfile(join("./{}/".format(module_name), f)) and
+                f for f in listdir("./{}/".format(MODULE_NAME))
+                if (isfile(join("./{}/".format(MODULE_NAME), f)) and
                     (".epub" in f))
             ]
-            book_names = ["./{}/{}".format(module_name, x) for x in book_names]
+            book_names = ["./{}/{}".format(MODULE_NAME, x) for x in book_names]
             print '\n===' + blue + ' READ IN THE BOOK... ' + normal + book_names[0] + ' ==='
             read_in_epub(book_names[0])
             print '\n===' + blue + ' CLEAN UP THE TEXT... ' + normal + '==='
@@ -526,10 +526,10 @@ def run_text_analysis_in_parallel():
                     break
 
             file_names = [
-                f for f in listdir("./{}/".format(module_name))
-                if (isfile(join("./{}/".format(module_name), f)) and
+                f for f in listdir("./{}/".format(MODULE_NAME))
+                if (isfile(join("./{}/".format(MODULE_NAME), f)) and
                     ("clean_output_" in f))
             ]
-            file_names = ["./{}/{}".format(module_name, x) for x in file_names]
+            file_names = ["./{}/{}".format(MODULE_NAME, x) for x in file_names]
             return text_analysis_helper_parallel(
                 file_names)  # Complete analysis
