@@ -47,6 +47,7 @@ Changes in the code were made in order to adapt it for the purpose of my project
 Rest of the project is presented under license in PROJECT_LICENSE.txt file and intellectual property of the researcher - Mikhail Molotkov.
 
 Application has been created under _**macOS Sierra 10.12 and Python 2.7.10**_ and thus has not been tested under other OS.
+
 **UPD** - Application has been tested in _**macOS Mojave 10.14.4 and Python 2.7.10**_ and currently I do experience some issues with **nltk & matplotlib** packages. Once they are resolved this line would go away
 
 If getting **DEPRECATION: Uninstalling a distutils installed project (six) has
