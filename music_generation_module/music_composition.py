@@ -120,3 +120,41 @@ def run_music_composition(pcs, sent_score_mapped, lex_score_mapped, read_score_m
 
     finish = time.time() - start
     print '\n===' + turquoise + ' Music composition has finished in ' + normal + '{} seconds'.format(str(finish)) + '==='
+
+def run_custom_music_composition(pcs, custom_query, epochs=6500):
+    start = time.time()
+
+    try:
+        os.mkdir('./{}/{}'.format(MODULE_NAME, OUTPUT_DIR))
+        print '\n===' + green + ' {} folder has been created '.format(OUTPUT_DIR) + normal + '==='
+    except:
+        print '\n===' + red + ' {} folder already exists '.format(OUTPUT_DIR) + normal + '==='
+        pass
+
+    try:
+        os.mkdir('./{}/{}'.format(MODULE_NAME, RESULTS_DIR))
+        print '\n===' + green + ' {} folder has been created '.format(RESULTS_DIR) + normal + '==='
+    except:
+        print '\n===' + red + ' {} folder already exists '.format(RESULTS_DIR) + normal + '==='
+        pass
+
+    print '\n===' + turquoise + ' LSTM model is being created... ' + normal + '==='
+    m = lstm_model.Model([300,300],[100,50], dropout=0.5) # Create LSTM model
+
+    print '\n===' + turquoise + ' LSTM model is being trained... ' + normal + '==='
+    model_training.trainModel(m, pcs, epochs) # Train LSTM model
+
+    print '\n===' + turquoise + ' Music for given text is being generated... ' + normal + '==='
+
+    if len(custom_query) < 4:
+        print '\n===' + red + ' Custom query is in wrong format, Exiting... ' + normal + '==='
+        return
+
+    music_length = int(custom_query[3])
+    sent_score   = [int(custom_query[0])]
+    lex_score    = [int(custom_query[1])]
+    read_score   = [int(custom_query[2])]
+    music_composition_helper_final(m, pcs, music_length, sent_score, lex_score, read_score) # Generate music
+
+    finish = time.time() - start
+    print '\n===' + turquoise + ' Music composition has finished in ' + normal + '{} seconds'.format(str(finish)) + '==='
