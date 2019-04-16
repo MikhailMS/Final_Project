@@ -91,6 +91,44 @@ def music_composition_helper_final(m, pcs, times, sent_score_mapped, lex_score_m
         mid_out  = 'final_{}'.format(music)
         newscore.write('midi', join(MODULE_NAME, RESULTS_DIR, mid_out))
 
+def music_composition_helper_custom(m, pcs, times, sent_score_mapped, lex_score_mapped, read_score_mapped, output_name):
+    """Function composes music according to trained LSTM models and suppplied custom scores
+    and stores them into 'output' folder
+    """
+    print '\n' + green + '[+] Music bit # {} (out of {}) is being composed...'.format(1, len(sent_score_mapped)) + normal
+    xIpt, xOpt = map(lambda x: numpy.array(x, dtype='int8'), model_training.getMidiSegmentInitialStep(pcs, read_score_mapped[0], sent_score_mapped[0]))
+    all_outputs = [xOpt[0]] # Random piece with requested complexity and key is retrieved
+    m.start_slow_walk(xIpt[0])
+    cons = 1
+
+    for time in range(model_training.BATCH_LEN*times):
+        resdata = m.slow_walk_fun( cons )
+        nnotes = numpy.sum(resdata[-1][:,0])
+        if nnotes < 2:
+            if cons > 1:
+                cons = 1
+            cons -= 0.02
+        else:
+            cons += (1 - cons)*0.3
+        all_outputs.append(resdata[-1])
+    noteStateMatrixToMidi(numpy.array(all_outputs), name=join(MODULE_NAME, RESULTS_DIR, output_name), velocity=lex_score_mapped[0]*0.25)
+
+    # Here goes tempo change
+    custom_piece_name = '{}.mid'.format(output_name)
+    available_files    = [custom_piece_name]
+    tempo_scale_factor = 1.5 # Initial tempo slowed by half (120bpm down to 60bpm)
+
+    for index, music in enumerate(available_files):
+        score     = music21.converter.parse(join(MODULE_NAME, RESULTS_DIR, music))
+        scale     = lex_score_mapped[index] * 0.25
+        new_tempo = tempo_scale_factor - scale # If smaller than 1, then speed up, otherwise slow down
+
+        print 'Changing tempo in {} from {} to {}'.format(music, tempo_scale_factor, new_tempo)
+        newscore = score.scaleOffsets(new_tempo).scaleDurations(new_tempo)
+        mid_out  = 'final_{}'.format(music).split('.')[0]
+        print 'Writing finalised piece into {}'.format(mid_out)
+        newscore.write('midi', join(MODULE_NAME, RESULTS_DIR, mid_out))
+
 def run_music_composition(pcs, sent_score_mapped, lex_score_mapped, read_score_mapped, music_length= 30, epochs=5500):
     start = time.time()
 
@@ -161,7 +199,7 @@ def run_custom_music_composition(pcs, custom_query, epochs=6500, output_name='')
     sent_score   = [int(custom_query[0])]
     lex_score    = [int(custom_query[1])]
     read_score   = [int(custom_query[2])]
-    music_composition_helper_final(m, pcs, music_length, sent_score, lex_score, read_score, output_name=output_name) # Generate music
+    music_composition_helper_custom(m, pcs, music_length, sent_score, lex_score, read_score, output_name) # Generate music
 
     finish = time.time() - start
     print '\n===' + turquoise + ' Music composition has finished in ' + normal + '{} seconds'.format(str(finish)) + '==='
