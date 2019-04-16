@@ -3,4 +3,4 @@
 2. Now you can access Web GUI from your browser on **localhost:15672**, credentials:
   1. User: **segal**
   2. Pass: **segal**
-3. 
+3. To start Celery app, execute command `celery -A tasks worker --loglevel=info --logfile="./celery.log" --pidfile="./celery.pid" --detach --concurrency=2 -E`
