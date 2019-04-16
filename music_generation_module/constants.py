@@ -4,7 +4,9 @@ BATCH_LEN    = 16*8 # length of each sequence
 DIVISION_LEN = 16   # interval between possible start locations
 
 # Paths to folders
-MODULE_NAME = 'music_generation_module'
+
+# MODULE_NAME SHOULD BE SET PRIOR TO USE
+MODULE_NAME = 'full/path/to/music_generation_module'
 OUTPUT_DIR  = 'output'
 MUSIC_DIR   = 'music'
 RESULTS_DIR = 'results'
