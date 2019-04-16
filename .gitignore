@@ -5,6 +5,8 @@
 *.pyc
 *.p
 *.mid
+*.pid
+*.log
 extracted_features.p
 extra_analysis.py
 sentiment.py
