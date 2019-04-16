@@ -88,7 +88,7 @@ def trainModel(model, midi, epochs, start=0):
         stopflag[0] = True
     old_handler = signal.signal(signal.SIGINT, signal_handler)
 
-    available_configs = [f for f in listdir("./{}/{}/".format(MODULE_NAME, OUTPUT_DIR)) if (isfile(join("./{}/{}/".format(MODULE_NAME, OUTPUT_DIR), f)) and ("params" in f))]
+    available_configs = [f for f in listdir(join(MODULE_NAME, OUTPUT_DIR)) if (isfile(join(MODULE_NAME, OUTPUT_DIR, f)) and ("params" in f))]
     if available_configs:
         print '\n===' + green + ' PREVIOUS CONFIGURATIONS FOUND... ' + normal + '==='
         available_configs = [re.findall(r'\d+', x) for x in available_configs]
@@ -98,25 +98,32 @@ def trainModel(model, midi, epochs, start=0):
         best_conf = available_configs[-1]
 
         if best_conf < epochs:
-            print '\n===' + green + ' LOADING CONFIGURATION FROM ' + './{}/{}/params{}.p '.format(MODULE_NAME, OUTPUT_DIR, best_conf) + normal + '==='
-            model.learned_config = pickle.load(open('./{}/{}/params{}.p'.format(MODULE_NAME, OUTPUT_DIR, best_conf), 'rb'))
+            params_in = 'params{}.p'.format(best_conf)
+            print '\n===' + green + ' LOADING CONFIGURATION FROM ' + join(MODULE_NAME, OUTPUT_DIR, params_in) + normal + '==='
+            model.learned_config = pickle.load(open(join(MODULE_NAME, OUTPUT_DIR, params_in), 'rb'))
             print '\n===' + green + ' LOAD IS COMPLETED! STARTING TRAINING... ' + normal + '==='
 
-            for i in range(best_conf,epochs+1):
+            print best_conf, type(best_conf)
+            print epochs, type(epochs)
+            for i in range(best_conf, epochs+1):
                 if stopflag[0]:
                     break
                 error = model.update_fun(*getMidiBatch(midi))
                 if i % 100 == 0:
                     print '\n[+]' + yellow + " Epoch {}, error={} ".format(i,error) + normal + '==='
-                    pickle.dump(model.learned_config,open('./{}/{}/params{}.p'.format(MODULE_NAME, OUTPUT_DIR, i), 'wb'))
+                    params_out = 'params{}.p'.format(i)
+                    pickle.dump(model.learned_config, open(join(MODULE_NAME, OUTPUT_DIR, params_out), 'wb'))
                 if i % 500 == 0 or (i % 100 == 0 and i < 1000):
+                    sample_out = 'sample{}'.format(i)
+                    params_out = 'params{}.p'.format(i)
                     xIpt, xOpt = map(numpy.array, getMidiSegment(midi))
-                    noteStateMatrixToMidi(numpy.concatenate((numpy.expand_dims(xOpt[0], 0), model.predict_fun(BATCH_LEN, 1, xIpt[0])), axis=0),'./{}/{}/sample{}'.format(MODULE_NAME, OUTPUT_DIR, i))
-                    pickle.dump(model.learned_config,open('./{}/{}/params{}.p'.format(MODULE_NAME, OUTPUT_DIR, i), 'wb'))
+                    noteStateMatrixToMidi(numpy.concatenate((numpy.expand_dims(xOpt[0], 0), model.predict_fun(BATCH_LEN, 1, xIpt[0])), axis=0), join(MODULE_NAME, OUTPUT_DIR, sample_out))
+                    pickle.dump(model.learned_config, open(join(MODULE_NAME, OUTPUT_DIR, params_out), 'wb'))
             signal.signal(signal.SIGINT, old_handler)
         else:
             print '\n===' + red + ' BEST FOUND CONFIGURATION ({}) IS FINAL. EXITING... '.format(best_conf) + normal + '==='
-            model.learned_config = pickle.load(open('./{}/{}/params{}.p'.format(MODULE_NAME, OUTPUT_DIR, best_conf), 'rb'))
+            params_in = 'params{}.p'.format(best_conf)
+            model.learned_config = pickle.load(open(join(MODULE_NAME, OUTPUT_DIR, params_in), 'rb'))
             signal.signal(signal.SIGINT, old_handler)
     else:
         print '\n===' + red + ' NO PREVIOUS CONFIGURATIONS FOUND. ' + normal + '==='
@@ -127,9 +134,13 @@ def trainModel(model, midi, epochs, start=0):
             error = model.update_fun(*getMidiBatch(midi))
             if i % 100 == 0:
                 print '\n[+]' + yellow + " Epoch {}, error={} ".format(i,error) + normal + '==='
-                pickle.dump(model.learned_config,open('./{}/{}/params{}.p'.format(MODULE_NAME, OUTPUT_DIR, i), 'wb'))
+                params_out = 'params{}.p'.format(i)
+                pickle.dump(model.learned_config, open(join(MODULE_NAME, OUTPUT_DIR, params_out), 'wb'))
             if i % 500 == 0 or (i % 100 == 0 and i < 1000):
+                sample_out = 'sample{}'.format(i)
+                params_out = 'params{}.p'.format(i)
                 xIpt, xOpt = map(numpy.array, getMidiSegment(midi))
-                noteStateMatrixToMidi(numpy.concatenate((numpy.expand_dims(xOpt[0], 0), model.predict_fun(BATCH_LEN, 1, xIpt[0])), axis=0),'./{}/{}/sample{}'.format(MODULE_NAME, OUTPUT_DIR, i))
-                pickle.dump(model.learned_config,open('./{}/{}/params{}.p'.format(MODULE_NAME, OUTPUT_DIR, i), 'wb'))
+                noteStateMatrixToMidi(numpy.concatenate((numpy.expand_dims(xOpt[0], 0), model.predict_fun(BATCH_LEN, 1, xIpt[0])), axis=0), join(MODULE_NAME, OUTPUT_DIR, sample_out))
+                pickle.dump(model.learned_config,open(join(MODULE_NAME, OUTPUT_DIR, params_out), 'wb'))
         signal.signal(signal.SIGINT, old_handler)
+

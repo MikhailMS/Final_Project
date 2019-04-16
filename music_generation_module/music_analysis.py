@@ -20,15 +20,15 @@ def process_music():
     pieces = {}
     music_keys = load_music_key()
 
-    music_folders = [f for f in listdir("./{}/{}/".format(MODULE_NAME, MUSIC_DIR)) if not(isfile(join("./{}/{}/".format(MODULE_NAME, MUSIC_DIR), f))) and ("level" in f)]
+    music_folders = [f for f in listdir(join(MODULE_NAME, MUSIC_DIR)) if not(isfile(join(MODULE_NAME, MUSIC_DIR, f))) and ("level" in f)]
 
     for iter, folder in enumerate(music_folders):
-        available_files = [f for f in listdir("./{}/{}/{}".format(MODULE_NAME, MUSIC_DIR, folder)) if (isfile(join("./{}/{}/{}".format(MODULE_NAME, MUSIC_DIR, folder), f)) and (".mid" in f))]
+        available_files = [f for f in listdir(join(MODULE_NAME, MUSIC_DIR, folder)) if (isfile(join(MODULE_NAME, MUSIC_DIR, folder, f)) and (".mid" in f))]
         for music in available_files:
 
             name = music[:-4]
             try:
-                outMatrix = midiToNoteStateMatrix(join("./{}/{}/{}".format(MODULE_NAME, MUSIC_DIR, folder), music))
+                outMatrix = midiToNoteStateMatrix(join(MODULE_NAME, MUSIC_DIR, folder, music))
                 if len(outMatrix) <= BATCH_LEN:
                     print "Skipped {}".format(music)
                     skipped[music] = folder
@@ -49,7 +49,7 @@ def process_music():
     if skipped:
         for k,v in skipped.iteritems():
             try:
-                os.remove('./{}/{}/{}/{}'.format(MODULE_NAME, MUSIC_DIR, v, k))
+                os.remove(join(MODULE_NAME, MUSIC_DIR, v, k))
             except OSError, e:
                 print '{} could not be deleted by script: {}'.format(item, e)
     else:
@@ -65,11 +65,11 @@ def music_key_helper(folders):
         for folder in folders:
             results = dict()
             print '[+]' + green + ' Analysing {} files '.format(folder) + normal + '[+]'
-            available_files = [f for f in listdir("./{}/{}/{}".format(MODULE_NAME, MUSIC_DIR, folder)) if (isfile(join("./{}/{}/{}".format(MODULE_NAME, MUSIC_DIR, folder), f)) and (".mid" in f))]
+            available_files = [f for f in listdir(join(MODULE_NAME, MUSIC_DIR, folder)) if (isfile(join(MODULE_NAME, MUSIC_DIR, folder, f)) and (".mid" in f))]
             for music in available_files:
                 name = music[:-4]
                 try:
-                    score = music21.converter.parse("./{}/{}/{}/{}".format(MODULE_NAME, MUSIC_DIR, folder, music))
+                    score = music21.converter.parse(join(MODULE_NAME, MUSIC_DIR, folder, music))
                     key = score.analyze('key')
                     print '{} is in {} key'.format(music, key.mode)
                     results[name] = 1 if key.mode=='major' else 0
@@ -96,10 +96,10 @@ def music_key_helper(folders):
 def load_music_key():
     """Once all keys are available, load them into one dict and return it"""
     results = dict()
-    keys_saved = [f for f in listdir("./{}/{}/".format(MODULE_NAME, MUSIC_DIR)) if ("keys_" in f)]
+    keys_saved = [f for f in listdir(join(MODULE_NAME, MUSIC_DIR)) if ("keys_" in f)]
 
     for key in keys_saved:
-        results.update(pickle.load(open('./{}/{}/{}'.format(MODULE_NAME, MUSIC_DIR, key), 'rb')))
+        results.update(pickle.load(open(join(MODULE_NAME, MUSIC_DIR, key), 'rb')))
     print len(results)
     return results
 
@@ -108,8 +108,8 @@ def get_music_key_dict():
     key - music name,
     value - key (0 - minor, 1 - major)
     """
-    keys_saved = [f for f in listdir("./{}/{}/".format(MODULE_NAME, MUSIC_DIR)) if isfile(join("./{}/{}".format(MODULE_NAME, MUSIC_DIR), f)) and ("keys_" in f)]
-    music_folders = [f for f in listdir("./{}/{}/".format(MODULE_NAME, MUSIC_DIR)) if not isfile(join("./{}/{}".format(MODULE_NAME, MUSIC_DIR), f)) and ("level" in f)]
+    keys_saved = [f for f in listdir(join(MODULE_NAME, MUSIC_DIR)) if isfile(join(MODULE_NAME, MUSIC_DIR, f)) and ("keys_" in f)]
+    music_folders = [f for f in listdir(join(MODULE_NAME, MUSIC_DIR)) if not isfile(join(MODULE_NAME, MUSIC_DIR, f)) and ("level" in f)]
 
     if keys_saved:
         folders_to_analyse = music_folders[:]

@@ -37,9 +37,10 @@ def music_composition_helper(m, pcs, times=20, keep_thoughts=False, name="final_
             all_thoughts.append(resdata)
     noteStateMatrixToMidi(numpy.array(all_outputs), name='./{}/{}/{}'.format(MODULE_NAME, OUTPUT_DIR, name))
     if keep_thoughts:
-        pickle.dump(all_thoughts, open('./{}/{}/{}.p'.format(MODULE_NAME, OUTPUT_DIR, name),'wb'))
+        out_to = '{}.p'.format(name)
+        pickle.dump(all_thoughts, open(join(MODULE_NAME, OUTPUT_DIR, out_to),'wb'))
 
-def music_composition_helper_final(m, pcs, times, sent_score_mapped, lex_score_mapped, read_score_mapped):
+def music_composition_helper_final(m, pcs, times, sent_score_mapped, lex_score_mapped, read_score_mapped, output_name=''):
     """Function composes music according to trained LSTM models and mapped text features
     and stores them into 'output' folder
     """
@@ -52,7 +53,8 @@ def music_composition_helper_final(m, pcs, times, sent_score_mapped, lex_score_m
             cons = 1
 
         else:
-            new_pcs = midiToNoteStateMatrix('./{}/{}/{}.mid'.format(MODULE_NAME, RESULTS_DIR, i-1))
+            mid_in  = '{}.mid'.format(i-1)
+            new_pcs = midiToNoteStateMatrix(join(MODULE_NAME, RESULTS_DIR, mid_in))
             xIpt, xOpt = map(lambda x: numpy.array(x, dtype='int8'), model_training.getMidiSegmentTextFeatures(new_pcs, read_score_mapped[i], sent_score_mapped[i]))
             all_outputs = [xOpt[0]] # Choose previously created midi file and pass desired complexity and key along
             m.start_slow_walk(xIpt[0])
@@ -68,21 +70,26 @@ def music_composition_helper_final(m, pcs, times, sent_score_mapped, lex_score_m
             else:
                 cons += (1 - cons)*0.3
             all_outputs.append(resdata[-1])
-        noteStateMatrixToMidi(numpy.array(all_outputs), name='./{}/{}/{}'.format(MODULE_NAME, RESULTS_DIR, i), velocity=lex_score_mapped[i]*0.25)
+        if output_name:
+            noteStateMatrixToMidi(numpy.array(all_outputs), name=join(MODULE_NAME, RESULTS_DIR, output_name), velocity=lex_score_mapped[i]*0.25)
+        else:
+            noteStateMatrixToMidi(numpy.array(all_outputs), name=join(MODULE_NAME, RESULTS_DIR, i), velocity=lex_score_mapped[i]*0.25)
 
     # Here goes tempo change
-    available_files    = sorted([f for f in listdir("./{}/{}".format(MODULE_NAME, RESULTS_DIR)) if (isfile(join("./{}/{}".format(MODULE_NAME, RESULTS_DIR), f)) and (".mid" in f))],
+    print [f for f in listdir(join(MODULE_NAME, RESULTS_DIR)) if (isfile(join(MODULE_NAME, RESULTS_DIR, f)) and (".mid" in f))]
+    available_files    = sorted([f for f in listdir(join(MODULE_NAME, RESULTS_DIR)) if (isfile(join(MODULE_NAME, RESULTS_DIR, f)) and (".mid" in f))],
                                 key=lambda f: int(filter(str.isdigit, f)))
     tempo_scale_factor = 1.5 # Initial tempo slowed by half (120bpm down to 60bpm)
 
     for index, music in enumerate(available_files):
-        score     = music21.converter.parse("./{}/{}/{}".format(MODULE_NAME, RESULTS_DIR, music))
+        score     = music21.converter.parse(join(MODULE_NAME, RESULTS_DIR, music))
         scale     = lex_score_mapped[index] * 0.25
         new_tempo = tempo_scale_factor - scale # If smaller than 1, then speed up, otherwise slow down
 
         print 'Changing tempo in {} from {} to {}'.format(music, tempo_scale_factor, new_tempo)
         newscore = score.scaleOffsets(new_tempo).scaleDurations(new_tempo)
-        newscore.write('midi', './{}/{}/final_{}'.format(MODULE_NAME, RESULTS_DIR, music))
+        mid_out  = 'final_{}'.format(music)
+        newscore.write('midi', join(MODULE_NAME, RESULTS_DIR, mid_out))
 
 def run_music_composition(pcs, sent_score_mapped, lex_score_mapped, read_score_mapped, music_length= 30, epochs=5500):
     start = time.time()
@@ -121,7 +128,7 @@ def run_music_composition(pcs, sent_score_mapped, lex_score_mapped, read_score_m
     finish = time.time() - start
     print '\n===' + turquoise + ' Music composition has finished in ' + normal + '{} seconds'.format(str(finish)) + '==='
 
-def run_custom_music_composition(pcs, custom_query, epochs=6500):
+def run_custom_music_composition(pcs, custom_query, epochs=6500, output_name=''):
     start = time.time()
 
     try:
@@ -154,7 +161,7 @@ def run_custom_music_composition(pcs, custom_query, epochs=6500):
     sent_score   = [int(custom_query[0])]
     lex_score    = [int(custom_query[1])]
     read_score   = [int(custom_query[2])]
-    music_composition_helper_final(m, pcs, music_length, sent_score, lex_score, read_score) # Generate music
+    music_composition_helper_final(m, pcs, music_length, sent_score, lex_score, read_score, output_name=output_name) # Generate music
 
     finish = time.time() - start
     print '\n===' + turquoise + ' Music composition has finished in ' + normal + '{} seconds'.format(str(finish)) + '==='
