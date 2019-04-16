@@ -125,7 +125,7 @@ def music_composition_helper_custom(m, pcs, times, sent_score_mapped, lex_score_
 
         print 'Changing tempo in {} from {} to {}'.format(music, tempo_scale_factor, new_tempo)
         newscore = score.scaleOffsets(new_tempo).scaleDurations(new_tempo)
-        mid_out  = 'final_{}'.format(music).split('.')[0]
+        mid_out  = 'final_{}'.format(music)
         print 'Writing finalised piece into {}'.format(mid_out)
         newscore.write('midi', join(MODULE_NAME, RESULTS_DIR, mid_out))
 
