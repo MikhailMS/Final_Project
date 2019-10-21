@@ -22,7 +22,7 @@ MarkupSafe==1.1.1
 matplotlib==2.2.4
 mido==1.2.9
 music21==4.1.0
-nltk==3.4
+nltk==3.4.5
 numpy==1.9.1
 packaging==19.0
 pandas==0.24.2
