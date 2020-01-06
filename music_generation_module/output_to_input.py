@@ -12,7 +12,7 @@ class OutputFormToInputFormOp(theano.Op):
 
     def make_node(self, state, time):
         state = T.as_tensor_variable(state)
-        time = T.as_tensor_variable(time)
+        time  = T.as_tensor_variable(time)
         """Assumably there should be third variable that holds extra params
         extra = T.as_tensor_variable(extra)
         return theano.Apply(self, [state, time, extra], [T.bmatrix()])
@@ -22,7 +22,7 @@ class OutputFormToInputFormOp(theano.Op):
 
     # Python implementation:
     def perform(self, node, inputs_storage, output_storage):
-        state, time = inputs_storage
+        state, time          = inputs_storage
         output_storage[0][0] = np.array(noteStateSingleToInputForm(state, time), dtype='int8')
         """Taking third parameter into account:
         state, time, extra = inputs_storage

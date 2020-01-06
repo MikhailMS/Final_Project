@@ -1,23 +1,23 @@
-# Import packages
 import os, random, re, time
 import cPickle as pickle
 import signal
 import music21
-from os import listdir
+
+from os      import listdir
 from os.path import isfile, join
 
-# Import modules
-from midi_to_statematrix import *
-# from model_training import batch_len
-from model_data import *
-from utils import *
-from constants import *
 
-# Main class
+from midi_to_statematrix import *
+from model_training      import batch_len
+from model_data          import *
+from utils               import *
+from constants           import *
+
+
 def process_music():
     """Function deletes files that cannot be used in training to reduce running time on next try"""
-    skipped = dict()
-    pieces = {}
+    skipped    = dict()
+    pieces     = {}
     music_keys = load_music_key()
 
     music_folders = [f for f in listdir(join(MODULE_NAME, MUSIC_DIR)) if not(isfile(join(MODULE_NAME, MUSIC_DIR, f))) and ("level" in f)]

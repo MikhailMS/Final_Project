@@ -1,17 +1,17 @@
-# Import packages
 import os, random, re
 import cPickle as pickle
 import signal
 import sys
 import music21
+
 from os import listdir
 from os.path import isfile, join
 
-# Import modules
+
 from midi_to_statematrix import *
-from model_data import *
-from utils import *
-from constants import *
+from model_data          import *
+from utils               import *
+from constants           import *
 
 # Main class
 def getMidiSegment(midi):
@@ -61,14 +61,14 @@ def getMidiSegmentTextFeatures(midi, compl, key):
     piece_output = midi
 
     compl_score = compl # Set the complexity of according music piece
-    key_score = key # Set the tonic of according music piece
+    key_score   = key   # Set the tonic of according music piece
 
-    start = len(piece_output)-BATCH_LEN # Take the last part of the generated piece for more consistent music composition
+    start = len(piece_output) - BATCH_LEN # Take the last part of the generated piece for more consistent music composition
 
     #print "Range is {} {} {} -> {}".format(0,len(piece_output)-BATCH_LEN,DIVISION_LEN, start)
 
     seg_out = piece_output[start:start+BATCH_LEN]
-    seg_in = noteStateMatrixToInputForm(seg_out+[compl_score]+[key_score])
+    seg_in  = noteStateMatrixToInputForm(seg_out+[compl_score]+[key_score])
 
     return seg_in, seg_out
 

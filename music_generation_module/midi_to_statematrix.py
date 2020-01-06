@@ -2,22 +2,26 @@
 import midi, numpy
 
 # Main class
+
+# Need to add description to what is lower/upper boundaries
 lowerBound = 24
 upperBound = 102
 
 def midiToNoteStateMatrix(midifile):
-    """Converts given MIDI file to state matrix (model readable form)
+    """
+    Converts given MIDI file to state matrix (model readable form)
     and return the latter
     """
-    pattern = midi.read_midifile(midifile)
+    pattern = midi.read_midifile(midifile) # midi.containers.Pattern
 
-    timeleft = [track[0].tick for track in pattern]
-
-    posns = [0 for track in pattern]
-
+    timeleft    = [track[0].tick for track in pattern]
+    print(timeleft)
+    print(len(timeleft))
+    posns       = [0 for track in pattern]
+    print(posns)
     statematrix = []
-    span = upperBound-lowerBound
-    time = 0
+    span        = upperBound - lowerBound
+    time        = 0
 
     state = [[0,0] for x in range(span)]
     statematrix.append(state)
@@ -25,16 +29,18 @@ def midiToNoteStateMatrix(midifile):
         if time % (pattern.resolution / 4) == (pattern.resolution / 8):
             # Create a new state, defaulting to holding notes
             oldstate = state
-            state = [[oldstate[x][0],0] for x in range(span)]
+            state    = [[oldstate[x][0],0] for x in range(span)]
+
             statematrix.append(state)
 
         for i in range(len(timeleft)):
             while timeleft[i] == 0:
                 track = pattern[i]
-                pos = posns[i]
+                pos   = posns[i]
 
                 evt = track[pos]
                 if isinstance(evt, midi.NoteEvent):
+                    print(evt.pitch)
                     if (evt.pitch < lowerBound) or (evt.pitch >= upperBound):
                         pass
                         # print "Note {} at time {} out of bounds (ignoring)".format(evt.pitch, time)
@@ -66,17 +72,19 @@ def midiToNoteStateMatrix(midifile):
     return statematrix
 
 def noteStateMatrixToMidi(statematrix, name="result",  velocity=0.5):
-    """Converts given state matrix to MIDI file
+    """
+    Converts given state matrix to MIDI file
     and return the latter, so it could be passed to software to play it out
     """
-    vel = velocity
-    print 'Velocity multiplier: {}'.format(vel)
+    vel         = velocity
     statematrix = numpy.asarray(statematrix) # Make sure we work with an array
-    pattern = midi.Pattern()
-    track = midi.Track()
+    pattern     = midi.Pattern()
+    track       = midi.Track()
+
+    print 'Velocity multiplier: {}'.format(vel)
     pattern.append(track)
 
-    span = upperBound-lowerBound
+    span      = upperBound - lowerBound
     tickscale = 55 # Why 55?
 
     lastcmdtime = 0
@@ -108,3 +116,8 @@ def noteStateMatrixToMidi(statematrix, name="result",  velocity=0.5):
     track.append(eot)
 
     midi.write_midifile("{}.mid".format(name), pattern)
+
+
+state = midiToNoteStateMatrix('/Users/mikhailmolotkov/Desktop/COM3600 - Research Project/Application_code/music_generation_module/music/level_1/ea_me61_9.mid')
+print(len(state))
+print(state)

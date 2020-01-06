@@ -1,6 +1,7 @@
 # Import packages
 import theano, theano_lstm, theano.tensor as T
 import numpy as np
+
 from theano_lstm import Embedding, LSTM, RNN, StackedCells, Layer, create_optimization_updates, masked_loss, MultiDropout
 
 # Import modules
@@ -40,8 +41,23 @@ def initial_state_with_taps(layer, dimensions = None):
     state = initial_state(layer, dimensions)
     if state is not None:
         return dict(initial=state, taps=[-1])
-    else:
-        return None
+
+    return None
+
+def get_last_layer(result):
+    """Returns last layer of the model"""
+    if isinstance(result, list):
+        return result[-1]
+    return result
+
+def ensure_list(result):
+    """Returns a list of result(-s)
+    If result is not of type 'list', then translate it into list and return it
+    """
+    if isinstance(result, list):
+        return result
+    return [result]
+
 
 class PassthroughLayer(Layer):
     """
@@ -65,21 +81,6 @@ class PassthroughLayer(Layer):
     def params(self, param_list):
         pass
 
-def get_last_layer(result):
-    """Returns last layer of the model"""
-    if isinstance(result, list):
-        return result[-1]
-    else:
-        return result
-
-def ensure_list(result):
-    """Returns a list of result(-s)
-    If result is not of type 'list', then translate it into list and return it
-    """
-    if isinstance(result, list):
-        return result
-    else:
-        return [result]
 
 class Model(object):
 

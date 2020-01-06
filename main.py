@@ -1,14 +1,13 @@
 import argparse
 import time
 
-# Import modules
-from text_analysis_module import run_text_analysis_in_parallel # , plot_features
+from text_analysis_module    import run_text_analysis_in_parallel # , plot_features
 from music_generation_module import run_complexity_analysis, run_music_composition, run_custom_music_composition, run_tests, music_analysis
-from mapping_module import map_text_parameters
+from mapping_module          import map_text_parameters
 
 
 # Main class
-def run_application(test_enabled='false', compl_analysis_enabled='false', custom_query=[]):
+def run_application(test_enabled = 'false', compl_analysis_enabled = 'false', custom_query = []):
     """Main function that runs whole application:
     Starting with text analysis -> train LSTM model ->
     Use text features to generate music

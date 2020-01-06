@@ -1,41 +1,47 @@
-# Import packages
 import cPickle as pickle
 import music21
 import time, gzip, numpy, os
-from os import listdir
+
+from os      import listdir
 from os.path import isfile, join
 
-# Import modules
-from midi_to_statematrix import *
 import model_training
 import lstm_model
-from utils import *
-from constants import *
 
-# Main class
+from midi_to_statematrix import *
+from utils               import *
+from constants           import *
+
+
 def music_composition_helper(m, pcs, times=20, keep_thoughts=False, name="final_piece"):
     """Function composes music according to trained LSTM models
     and stores them into 'output' folder
     """
-    xIpt, xOpt = map(lambda x: numpy.array(x, dtype='int8'), model_training.getMidiSegmentInitialStep(pcs, 6, 1))
+    xIpt, xOpt  = map(lambda x: numpy.array(x, dtype='int8'), model_training.getMidiSegmentInitialStep(pcs, 6, 1))
     all_outputs = [xOpt[0]]
+
     if keep_thoughts:
         all_thoughts = []
+
     m.start_slow_walk(xIpt[0])
     cons = 1
+
     for time in range(model_training.BATCH_LEN*times):
         resdata = m.slow_walk_fun( cons )
-        nnotes = numpy.sum(resdata[-1][:,0])
+        nnotes  = numpy.sum(resdata[-1][:,0])
         if nnotes < 2:
             if cons > 1:
                 cons = 1
                 cons -= 0.02
         else:
             cons += (1 - cons)*0.3
+
         all_outputs.append(resdata[-1])
         if keep_thoughts:
             all_thoughts.append(resdata)
+
     noteStateMatrixToMidi(numpy.array(all_outputs), name='./{}/{}/{}'.format(MODULE_NAME, OUTPUT_DIR, name))
+
     if keep_thoughts:
         out_to = '{}.p'.format(name)
         pickle.dump(all_thoughts, open(join(MODULE_NAME, OUTPUT_DIR, out_to),'wb'))
@@ -69,7 +75,9 @@ def music_composition_helper_final(m, pcs, times, sent_score_mapped, lex_score_m
                 cons -= 0.02
             else:
                 cons += (1 - cons)*0.3
+
             all_outputs.append(resdata[-1])
+
         if output_name:
             noteStateMatrixToMidi(numpy.array(all_outputs), name=join(MODULE_NAME, RESULTS_DIR, output_name), velocity=lex_score_mapped[i]*0.25)
         else:
@@ -114,7 +122,7 @@ def music_composition_helper_custom(m, pcs, times, sent_score_mapped, lex_score_
     noteStateMatrixToMidi(numpy.array(all_outputs), name=join(MODULE_NAME, RESULTS_DIR, output_name), velocity=lex_score_mapped[0]*0.25)
 
     # Here goes tempo change
-    custom_piece_name = '{}.mid'.format(output_name)
+    custom_piece_name  = '{}.mid'.format(output_name)
     available_files    = [custom_piece_name]
     tempo_scale_factor = 1.5 # Initial tempo slowed by half (120bpm down to 60bpm)
 
@@ -166,7 +174,7 @@ def run_music_composition(pcs, sent_score_mapped, lex_score_mapped, read_score_m
     finish = time.time() - start
     print '\n===' + turquoise + ' Music composition has finished in ' + normal + '{} seconds'.format(str(finish)) + '==='
 
-def run_custom_music_composition(pcs, custom_query, epochs=6500, output_name=''):
+def run_custom_music_composition(pcs, custom_query, epochs=6500, output_name='custom_compose_'):
     start = time.time()
 
     try:
